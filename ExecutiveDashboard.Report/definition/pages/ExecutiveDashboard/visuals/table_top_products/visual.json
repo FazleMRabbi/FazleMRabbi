@@ -1,0 +1,206 @@
+{
+  "name": "table_top_products",
+  "position": {
+    "x": 10,
+    "y": 444,
+    "z": 2,
+    "height": 266,
+    "width": 778,
+    "tabOrder": 1000
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": { "SourceRef": { "Entity": "Product" } },
+                  "Property": "Product Name"
+                }
+              },
+              "queryRef": "Product.Product Name",
+              "active": true
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": { "SourceRef": { "Entity": "Product" } },
+                  "Property": "Category"
+                }
+              },
+              "queryRef": "Product.Category",
+              "active": true
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": { "SourceRef": { "Entity": "Sales" } },
+                  "Property": "Total Revenue"
+                }
+              },
+              "queryRef": "Sales.Total Revenue",
+              "active": true
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": { "SourceRef": { "Entity": "Sales" } },
+                  "Property": "Order Count"
+                }
+              },
+              "queryRef": "Sales.Order Count",
+              "active": true
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": { "SourceRef": { "Entity": "Sales" } },
+                  "Property": "Gross Profit %"
+                }
+              },
+              "queryRef": "Sales.Gross Profit %",
+              "active": true
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": { "SourceRef": { "Entity": "Sales" } },
+                "Property": "Total Revenue"
+              }
+            },
+            "direction": 2
+          }
+        ],
+        "isDefaultSort": true
+      },
+      "limits": {
+        "top": 10
+      }
+    },
+    "objects": {
+      "title": [
+        {
+          "properties": {
+            "show": { "expr": { "Literal": { "Value": "true" } } },
+            "text": { "expr": { "Literal": { "Value": "'Top 10 Products by Revenue'" } } },
+            "fontColor": {
+              "solid": {
+                "color": { "expr": { "Literal": { "Value": "'#1B2A4A'" } } }
+              }
+            },
+            "fontSize": { "expr": { "Literal": { "Value": "12D" } } },
+            "fontFamily": { "expr": { "Literal": { "Value": "'Segoe UI'" } } },
+            "bold": { "expr": { "Literal": { "Value": "true" } } }
+          }
+        }
+      ],
+      "columnHeaders": [
+        {
+          "properties": {
+            "fontColor": {
+              "solid": {
+                "color": { "expr": { "Literal": { "Value": "'#FFFFFF'" } } }
+              }
+            },
+            "backColor": {
+              "solid": {
+                "color": { "expr": { "Literal": { "Value": "'#1B3A5C'" } } }
+              }
+            },
+            "outline": { "expr": { "Literal": { "Value": "'None'" } } },
+            "fontSize": { "expr": { "Literal": { "Value": "10D" } } },
+            "fontFamily": { "expr": { "Literal": { "Value": "'Segoe UI'" } } },
+            "bold": { "expr": { "Literal": { "Value": "true" } } }
+          }
+        }
+      ],
+      "rows": [
+        {
+          "properties": {
+            "fontColor": {
+              "solid": {
+                "color": { "expr": { "Literal": { "Value": "'#1B2A4A'" } } }
+              }
+            },
+            "backColor": {
+              "solid": {
+                "color": { "expr": { "Literal": { "Value": "'#FFFFFF'" } } }
+              }
+            },
+            "alternatingRowsState": { "expr": { "Literal": { "Value": "true" } } },
+            "alternatingRowColor": {
+              "solid": {
+                "color": { "expr": { "Literal": { "Value": "'#F0F6FF'" } } }
+              }
+            },
+            "outline": { "expr": { "Literal": { "Value": "'None'" } } },
+            "fontSize": { "expr": { "Literal": { "Value": "10D" } } },
+            "fontFamily": { "expr": { "Literal": { "Value": "'Segoe UI'" } } }
+          }
+        }
+      ],
+      "total": [
+        {
+          "properties": {
+            "totals": { "expr": { "Literal": { "Value": "true" } } },
+            "fontColor": {
+              "solid": {
+                "color": { "expr": { "Literal": { "Value": "'#FFFFFF'" } } }
+              }
+            },
+            "backColor": {
+              "solid": {
+                "color": { "expr": { "Literal": { "Value": "'#0F1C35'" } } }
+              }
+            },
+            "bold": { "expr": { "Literal": { "Value": "true" } } },
+            "fontSize": { "expr": { "Literal": { "Value": "10D" } } }
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "show": { "expr": { "Literal": { "Value": "true" } } },
+            "color": {
+              "solid": {
+                "color": { "expr": { "Literal": { "Value": "'#FFFFFF'" } } }
+              }
+            },
+            "transparency": { "expr": { "Literal": { "Value": "0D" } } }
+          }
+        }
+      ],
+      "border": [
+        {
+          "properties": {
+            "show": { "expr": { "Literal": { "Value": "true" } } },
+            "color": {
+              "solid": {
+                "color": { "expr": { "Literal": { "Value": "'#D5E1EC'" } } }
+              }
+            },
+            "radius": { "expr": { "Literal": { "Value": "6D" } } }
+          }
+        }
+      ],
+      "dropShadow": [
+        {
+          "properties": {
+            "show": { "expr": { "Literal": { "Value": "false" } } }
+          }
+        }
+      ]
+    }
+  }
+}

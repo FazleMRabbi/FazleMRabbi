@@ -1,0 +1,112 @@
+{
+  "name": "kpi_revenue",
+  "position": {
+    "x": 10,
+    "y": 70,
+    "z": 2,
+    "height": 126,
+    "width": 307,
+    "tabOrder": 400
+  },
+  "visual": {
+    "visualType": "card",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": { "SourceRef": { "Entity": "Sales" } },
+                  "Property": "Total Revenue"
+                }
+              },
+              "queryRef": "Sales.Total Revenue",
+              "active": true
+            }
+          ]
+        }
+      }
+    },
+    "objects": {
+      "labels": [
+        {
+          "properties": {
+            "color": {
+              "solid": {
+                "color": { "expr": { "Literal": { "Value": "'#FFFFFF'" } } }
+              }
+            },
+            "fontSize": { "expr": { "Literal": { "Value": "30D" } } },
+            "fontFamily": { "expr": { "Literal": { "Value": "'Segoe UI'" } } },
+            "bold": { "expr": { "Literal": { "Value": "true" } } },
+            "labelDisplayUnits": { "expr": { "Literal": { "Value": "1000000D" } } },
+            "labelPrecision": { "expr": { "Literal": { "Value": "1D" } } }
+          }
+        }
+      ],
+      "categoryLabel": [
+        {
+          "properties": {
+            "show": { "expr": { "Literal": { "Value": "false" } } }
+          }
+        }
+      ],
+      "title": [
+        {
+          "properties": {
+            "show": { "expr": { "Literal": { "Value": "true" } } },
+            "text": { "expr": { "Literal": { "Value": "'Total Revenue'" } } },
+            "fontColor": {
+              "solid": {
+                "color": { "expr": { "Literal": { "Value": "'#94B3CC'" } } }
+              }
+            },
+            "fontSize": { "expr": { "Literal": { "Value": "10D" } } },
+            "fontFamily": { "expr": { "Literal": { "Value": "'Segoe UI'" } } }
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "show": { "expr": { "Literal": { "Value": "true" } } },
+            "color": {
+              "solid": {
+                "color": { "expr": { "Literal": { "Value": "'#1B3A5C'" } } }
+              }
+            },
+            "transparency": { "expr": { "Literal": { "Value": "0D" } } }
+          }
+        }
+      ],
+      "border": [
+        {
+          "properties": {
+            "show": { "expr": { "Literal": { "Value": "true" } } },
+            "color": {
+              "solid": {
+                "color": { "expr": { "Literal": { "Value": "'#00A8E8'" } } }
+              }
+            },
+            "radius": { "expr": { "Literal": { "Value": "6D" } } }
+          }
+        }
+      ],
+      "dropShadow": [
+        {
+          "properties": {
+            "show": { "expr": { "Literal": { "Value": "true" } } },
+            "color": {
+              "solid": {
+                "color": { "expr": { "Literal": { "Value": "'#00000040'" } } }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

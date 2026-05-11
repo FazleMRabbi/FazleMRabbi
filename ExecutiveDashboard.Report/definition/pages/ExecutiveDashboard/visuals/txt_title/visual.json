@@ -1,0 +1,45 @@
+{
+  "name": "txt_title",
+  "position": {
+    "x": 16,
+    "y": 6,
+    "z": 1,
+    "height": 48,
+    "width": 540,
+    "tabOrder": 100
+  },
+  "visual": {
+    "visualType": "textbox",
+    "drillFilterOtherVisuals": false,
+    "paragraphs": [
+      {
+        "textRuns": [
+          {
+            "value": "EXECUTIVE DASHBOARD",
+            "textRunStyle": {
+              "fontFamily": "Segoe UI",
+              "fontSize": "16pt",
+              "bold": true,
+              "color": "#FFFFFF"
+            }
+          }
+        ],
+        "horizontalTextAlignment": "Left"
+      },
+      {
+        "textRuns": [
+          {
+            "value": "Real-Time Performance Overview  |  Powered by Demo Model",
+            "textRunStyle": {
+              "fontFamily": "Segoe UI",
+              "fontSize": "8pt",
+              "bold": false,
+              "color": "#94B3CC"
+            }
+          }
+        ],
+        "horizontalTextAlignment": "Left"
+      }
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "themeCollection": {
+    "baseTheme": {
+      "name": "CY24SU06",
+      "version": "5.58",
+      "type": 2
+    }
+  },
+  "settings": {
+    "useStylableVisualContainerHeader": true,
+    "exportDataMode": 1,
+    "useNewFilterPaneExperience": true,
+    "allowChangeFilterTypes": true,
+    "useDefaultAggregateDisplayName": true,
+    "isPaginatedReportStitchingEnabled": false
+  }
+}

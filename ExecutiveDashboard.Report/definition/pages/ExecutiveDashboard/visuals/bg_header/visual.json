@@ -1,0 +1,44 @@
+{
+  "name": "bg_header",
+  "position": {
+    "x": 0,
+    "y": 0,
+    "z": 0,
+    "height": 60,
+    "width": 1280,
+    "tabOrder": 0
+  },
+  "visual": {
+    "visualType": "shape",
+    "drillFilterOtherVisuals": false,
+    "objects": {
+      "line": [
+        {
+          "properties": {
+            "roundEdge": { "expr": { "Literal": { "Value": "0D" } } },
+            "weight": { "expr": { "Literal": { "Value": "0D" } } },
+            "color": {
+              "solid": {
+                "color": { "expr": { "Literal": { "Value": "'#0F1C35'" } } }
+              }
+            }
+          }
+        }
+      ],
+      "fill": [
+        {
+          "properties": {
+            "show": { "expr": { "Literal": { "Value": "true" } } },
+            "fillColor": {
+              "solid": {
+                "color": { "expr": { "Literal": { "Value": "'#0F1C35'" } } }
+              }
+            },
+            "transparency": { "expr": { "Literal": { "Value": "0D" } } }
+          }
+        }
+      ]
+    },
+    "shapeData": { "shapeType": 1 }
+  }
+}

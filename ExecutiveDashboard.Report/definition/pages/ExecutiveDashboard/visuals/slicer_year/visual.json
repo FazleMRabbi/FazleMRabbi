@@ -1,0 +1,109 @@
+{
+  "name": "slicer_year",
+  "position": {
+    "x": 972,
+    "y": 10,
+    "z": 1,
+    "height": 40,
+    "width": 296,
+    "tabOrder": 300
+  },
+  "visual": {
+    "visualType": "slicer",
+    "query": {
+      "queryState": {
+        "Field": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": { "SourceRef": { "Entity": "Date" } },
+                  "Property": "Year"
+                }
+              },
+              "queryRef": "Date.Year",
+              "active": true
+            }
+          ]
+        }
+      }
+    },
+    "objects": {
+      "data": [
+        {
+          "properties": {
+            "mode": { "expr": { "Literal": { "Value": "'Dropdown'" } } }
+          }
+        }
+      ],
+      "selection": [
+        {
+          "properties": {
+            "selectAllCheckboxEnabled": { "expr": { "Literal": { "Value": "true" } } },
+            "singleSelect": { "expr": { "Literal": { "Value": "false" } } }
+          }
+        }
+      ],
+      "header": [
+        {
+          "properties": {
+            "show": { "expr": { "Literal": { "Value": "true" } } },
+            "fontColor": {
+              "solid": {
+                "color": { "expr": { "Literal": { "Value": "'#94B3CC'" } } }
+              }
+            },
+            "background": {
+              "solid": {
+                "color": { "expr": { "Literal": { "Value": "'#0F1C35'" } } }
+              }
+            },
+            "outline": { "expr": { "Literal": { "Value": "'None'" } } },
+            "textSize": { "expr": { "Literal": { "Value": "9D" } } },
+            "text": { "expr": { "Literal": { "Value": "'Fiscal Year Filter'" } } }
+          }
+        }
+      ],
+      "items": [
+        {
+          "properties": {
+            "fontColor": {
+              "solid": {
+                "color": { "expr": { "Literal": { "Value": "'#1B2A4A'" } } }
+              }
+            },
+            "background": {
+              "solid": {
+                "color": { "expr": { "Literal": { "Value": "'#FFFFFF'" } } }
+              }
+            },
+            "outline": { "expr": { "Literal": { "Value": "'None'" } } },
+            "textSize": { "expr": { "Literal": { "Value": "10D" } } }
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "show": { "expr": { "Literal": { "Value": "true" } } },
+            "color": {
+              "solid": {
+                "color": { "expr": { "Literal": { "Value": "'#0F1C35'" } } }
+              }
+            },
+            "transparency": { "expr": { "Literal": { "Value": "0D" } } }
+          }
+        }
+      ],
+      "border": [
+        {
+          "properties": {
+            "show": { "expr": { "Literal": { "Value": "false" } } }
+          }
+        }
+      ]
+    }
+  }
+}

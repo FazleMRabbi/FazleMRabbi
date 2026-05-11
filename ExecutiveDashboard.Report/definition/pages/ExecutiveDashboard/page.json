@@ -1,0 +1,36 @@
+{
+  "name": "ExecutiveDashboard",
+  "displayName": "Executive Dashboard",
+  "displayOption": 1,
+  "height": 720,
+  "width": 1280,
+  "objects": {
+    "background": [
+      {
+        "properties": {
+          "color": {
+            "solid": {
+              "color": {
+                "expr": { "Literal": { "Value": "'#EEF2F7'" } }
+              }
+            }
+          },
+          "transparency": { "expr": { "Literal": { "Value": "0D" } } }
+        }
+      }
+    ],
+    "outspace": [
+      {
+        "properties": {
+          "color": {
+            "solid": {
+              "color": {
+                "expr": { "Literal": { "Value": "'#1A1A2E'" } }
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}

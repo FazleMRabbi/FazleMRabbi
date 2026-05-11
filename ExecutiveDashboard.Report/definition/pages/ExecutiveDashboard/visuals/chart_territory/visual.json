@@ -1,0 +1,180 @@
+{
+  "name": "chart_territory",
+  "position": {
+    "x": 798,
+    "y": 444,
+    "z": 2,
+    "height": 266,
+    "width": 472,
+    "tabOrder": 1100
+  },
+  "visual": {
+    "visualType": "clusteredBarChart",
+    "query": {
+      "queryState": {
+        "Category": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": { "SourceRef": { "Entity": "Territory" } },
+                  "Property": "Region"
+                }
+              },
+              "queryRef": "Territory.Region",
+              "active": true
+            }
+          ]
+        },
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": { "SourceRef": { "Entity": "Sales" } },
+                  "Property": "Total Revenue"
+                }
+              },
+              "queryRef": "Sales.Total Revenue",
+              "active": true
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": { "SourceRef": { "Entity": "Sales" } },
+                "Property": "Total Revenue"
+              }
+            },
+            "direction": 2
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "objects": {
+      "title": [
+        {
+          "properties": {
+            "show": { "expr": { "Literal": { "Value": "true" } } },
+            "text": { "expr": { "Literal": { "Value": "'Revenue by Territory'" } } },
+            "fontColor": {
+              "solid": {
+                "color": { "expr": { "Literal": { "Value": "'#1B2A4A'" } } }
+              }
+            },
+            "fontSize": { "expr": { "Literal": { "Value": "12D" } } },
+            "fontFamily": { "expr": { "Literal": { "Value": "'Segoe UI'" } } },
+            "bold": { "expr": { "Literal": { "Value": "true" } } }
+          }
+        }
+      ],
+      "dataPoint": [
+        {
+          "properties": {
+            "defaultColor": {
+              "solid": {
+                "color": { "expr": { "Literal": { "Value": "'#0078D4'" } } }
+              }
+            }
+          }
+        }
+      ],
+      "categoryAxis": [
+        {
+          "properties": {
+            "show": { "expr": { "Literal": { "Value": "true" } } },
+            "labelColor": {
+              "solid": {
+                "color": { "expr": { "Literal": { "Value": "'#6B7E9A'" } } }
+              }
+            },
+            "fontSize": { "expr": { "Literal": { "Value": "9D" } } }
+          }
+        }
+      ],
+      "valueAxis": [
+        {
+          "properties": {
+            "show": { "expr": { "Literal": { "Value": "true" } } },
+            "labelColor": {
+              "solid": {
+                "color": { "expr": { "Literal": { "Value": "'#6B7E9A'" } } }
+              }
+            },
+            "fontSize": { "expr": { "Literal": { "Value": "9D" } } },
+            "labelDisplayUnits": { "expr": { "Literal": { "Value": "1000000D" } } },
+            "gridlineShow": { "expr": { "Literal": { "Value": "true" } } },
+            "gridlineColor": {
+              "solid": {
+                "color": { "expr": { "Literal": { "Value": "'#E5EBF0'" } } }
+              }
+            }
+          }
+        }
+      ],
+      "legend": [
+        {
+          "properties": {
+            "show": { "expr": { "Literal": { "Value": "false" } } }
+          }
+        }
+      ],
+      "labels": [
+        {
+          "properties": {
+            "show": { "expr": { "Literal": { "Value": "true" } } },
+            "color": {
+              "solid": {
+                "color": { "expr": { "Literal": { "Value": "'#FFFFFF'" } } }
+              }
+            },
+            "fontSize": { "expr": { "Literal": { "Value": "9D" } } },
+            "labelDisplayUnits": { "expr": { "Literal": { "Value": "1000000D" } } },
+            "labelPrecision": { "expr": { "Literal": { "Value": "1D" } } },
+            "labelPosition": { "expr": { "Literal": { "Value": "'InsideEnd'" } } }
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "show": { "expr": { "Literal": { "Value": "true" } } },
+            "color": {
+              "solid": {
+                "color": { "expr": { "Literal": { "Value": "'#FFFFFF'" } } }
+              }
+            },
+            "transparency": { "expr": { "Literal": { "Value": "0D" } } }
+          }
+        }
+      ],
+      "border": [
+        {
+          "properties": {
+            "show": { "expr": { "Literal": { "Value": "true" } } },
+            "color": {
+              "solid": {
+                "color": { "expr": { "Literal": { "Value": "'#D5E1EC'" } } }
+              }
+            },
+            "radius": { "expr": { "Literal": { "Value": "6D" } } }
+          }
+        }
+      ],
+      "dropShadow": [
+        {
+          "properties": {
+            "show": { "expr": { "Literal": { "Value": "false" } } }
+          }
+        }
+      ]
+    }
+  }
+}
