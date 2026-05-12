@@ -567,7 +567,7 @@ function hBar(containerId, data, maxVal, colorFn, labelKey, valueKey, subKey){
       <div class="bar-track">
         <div class="bar-fill" style="width:${pct.toFixed(1)}%;background:${col}"></div>
       </div>
-      <div class="bar-val">${d[subKey]||d[valueKey]}</div>
+      <div class="bar-val">${typeof subKey==='function'?subKey(d):(d[subKey]||d[valueKey])}</div>
     </div>`;
   }).join('');
 }
@@ -621,7 +621,7 @@ function renderSegTable(data){
     return `<tr>
       <td>${r.ufid}</td>
       <td>${r.basin}</td>
-      <td>${r.diam!=null?r.diam+'"'':'—'}</td>
+      <td>${r.diam!=null?r.diam+'"':'—'}</td>
       <td>${r.model_type}</td>
       <td><span class="chip ${chip}">${r.depth_status}</span></td>
       <td>${scStr}</td>
