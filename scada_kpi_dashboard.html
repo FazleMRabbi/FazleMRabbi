@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>SCADA Lift-Station KPI Dashboard – LS_001</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d1117;--surf:#161b22;--surf2:#1e2633;--surf3:#252e3d;
+  --border:#30363d;--text:#e6edf3;--muted:#8b949e;--dim:#4d5a6b;
+  --blue:#3b82f6;--cyan:#22d3ee;--green:#3fb950;--yellow:#d29922;
+  --red:#f85149;--purple:#a855f7;--orange:#f97316;--teal:#14b8a6;
+  --radius:8px;--gap:16px;
+}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:13px;line-height:1.5}
+
+/* ── Layout ── */
+header{background:var(--surf);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;position:sticky;top:0;z-index:100}
+header h1{font-size:16px;font-weight:700}
+header .sub{font-size:12px;color:var(--muted)}
+.hdr-badges{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.badge{border-radius:12px;padding:3px 10px;font-size:11px;font-weight:600}
+.badge.blue{background:#0d2040;color:var(--blue)}
+.badge.green{background:#0e2018;color:var(--green)}
+.badge.red{background:#2d0f0e;color:var(--red)}
+.badge.yellow{background:#2e1f00;color:var(--yellow)}
+
+main{max-width:1600px;margin:0 auto;padding:20px 24px}
+.sec{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:28px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+
+/* ── Cards ── */
+.card{background:var(--surf);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px}
+.card h3{font-size:13px;font-weight:600;margin-bottom:12px}
+.card h3 small{font-size:11px;color:var(--muted);font-weight:400;margin-left:6px}
+
+/* ── Headline KPI grid ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:var(--gap)}
+.kpi-card{background:var(--surf);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;position:relative;overflow:hidden}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.kpi-card.t1::before{background:var(--blue)}
+.kpi-card.t2::before{background:var(--cyan)}
+.kpi-card.t3::before{background:var(--dim)}
+.kpi-card.alert::before{background:var(--red)}
+.kpi-icon{font-size:18px;margin-bottom:6px}
+.kpi-val{font-size:24px;font-weight:700;line-height:1}
+.kpi-unit{font-size:11px;color:var(--muted);margin-left:3px}
+.kpi-lbl{font-size:11px;color:var(--muted);margin-top:5px;line-height:1.3}
+
+/* ── Two/three col ── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:var(--gap)}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--gap)}
+.col-34{display:grid;grid-template-columns:3fr 2fr;gap:var(--gap)}
+@media(max-width:1000px){.two-col,.three-col,.col-34{grid-template-columns:1fr}}
+
+/* ── SVG chart container ── */
+.chart-svg-wrap{width:100%;overflow-x:auto}
+svg.chart{display:block}
+
+/* ── Pump cards ── */
+.pump-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--gap)}
+@media(max-width:800px){.pump-grid{grid-template-columns:1fr}}
+.pump-card{background:var(--surf);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+.pump-card .pump-hdr{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.pump-badge{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700}
+.pump-name{font-size:14px;font-weight:600}
+.pump-role{font-size:11px;color:var(--muted)}
+.pump-stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px}
+.pstat{display:flex;flex-direction:column}
+.pstat-val{font-size:16px;font-weight:700}
+.pstat-lbl{font-size:10px;color:var(--muted)}
+.avail-dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:4px}
+
+/* ── Stacked bar ── */
+.hbar{display:flex;height:20px;border-radius:4px;overflow:hidden;background:var(--surf2);width:100%}
+.hbar-seg{display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:rgba(0,0,0,.7);transition:width .4s}
+
+/* ── Rain event cards ── */
+.rain-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--gap)}
+@media(max-width:700px){.rain-grid{grid-template-columns:1fr}}
+.rain-card{background:var(--surf);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+.rain-hdr{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.rain-icon{font-size:22px}
+.rain-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)}
+.rain-row:last-child{border-bottom:none}
+.rain-key{font-size:11px;color:var(--muted)}
+.rain-val{font-size:12px;font-weight:600}
+
+/* ── KPI table ── */
+.kpi-tbl-wrap{overflow-x:auto}
+table.kpi-tbl{width:100%;border-collapse:collapse;font-size:12px}
+table.kpi-tbl thead th{background:var(--surf2);padding:8px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:0}
+table.kpi-tbl tbody tr{border-bottom:1px solid var(--border)}
+table.kpi-tbl tbody tr:last-child{border-bottom:none}
+table.kpi-tbl tbody tr:hover{background:var(--surf2)}
+table.kpi-tbl td{padding:7px 12px;vertical-align:middle}
+.td-mono{font-family:monospace;color:var(--muted);font-size:11px}
+.tier-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px}
+.tier1{background:var(--blue)}
+.tier2{background:var(--cyan)}
+.tier3{background:var(--dim)}
+
+/* ── Flags panel ── */
+.flag-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--gap)}
+@media(max-width:700px){.flag-grid{grid-template-columns:1fr}}
+.flag-card{border-radius:var(--radius);padding:16px 18px;display:flex;align-items:center;gap:14px}
+.flag-icon{font-size:28px}
+.flag-title{font-size:13px;font-weight:600}
+.flag-sub{font-size:11px;color:var(--muted);margin-top:3px}
+
+/* ── Trigger severity bars ── */
+.sev-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.sev-label{width:64px;font-size:12px}
+.sev-bar-wrap{flex:1;background:var(--surf2);border-radius:4px;height:18px;overflow:hidden}
+.sev-bar{height:100%;border-radius:4px;display:flex;align-items:center;padding-left:8px;font-size:11px;font-weight:600;color:#000}
+.sev-count{font-size:13px;font-weight:700;width:28px;text-align:right}
+
+/* ── Daily bars (mini sparkline tables) ── */
+.daily-wrap{overflow-x:auto}
+.daily-tbl{min-width:560px}
+
+footer{border-top:1px solid var(--border);padding:14px 24px;text-align:center;color:var(--muted);font-size:11px;margin-top:40px}
+</style>
+</head>
+<body>
+
+<header>
+  <div style="font-size:22px">🚿</div>
+  <div>
+    <h1>SCADA Lift-Station KPI Dashboard — LS_001</h1>
+    <div class="sub">7-day simulation · 1-min SCADA · 3 pumps (P1 duty / P2 lag / P3 assist) · 40 KPIs</div>
+  </div>
+  <div class="hdr-badges" id="hdr-badges"></div>
+</header>
+
+<main>
+
+<!-- ── Headline KPIs ── -->
+<div class="sec">Station Headline KPIs</div>
+<div class="kpi-grid" id="headline-grid"></div>
+
+<!-- ── Time-series chart ── -->
+<div class="sec">Wet-Well Level · Pump Status · Rain  <span style="color:var(--dim);font-weight:400">(5-min sampled)</span></div>
+<div class="card">
+  <div class="chart-svg-wrap" id="ts-chart-wrap"></div>
+</div>
+
+<!-- ── Daily summary ── -->
+<div class="sec">Daily KPI Trends</div>
+<div class="two-col">
+  <div class="card">
+    <h3>Daily Starts by Pump</h3>
+    <div class="daily-wrap"><div id="starts-chart"></div></div>
+  </div>
+  <div class="card">
+    <h3>Daily Runtime (min) by Pump</h3>
+    <div class="daily-wrap"><div id="rt-chart"></div></div>
+  </div>
+</div>
+<div class="two-col" style="margin-top:var(--gap)">
+  <div class="card">
+    <h3>Daily Max Wet-Well Level <small>stress threshold = 14.5 ft</small></h3>
+    <div id="ww-max-chart"></div>
+  </div>
+  <div class="card">
+    <h3>Daily Inferred Inflow (off-pump) <small>gpm, mean + P95</small></h3>
+    <div id="inflow-chart"></div>
+  </div>
+</div>
+
+<!-- ── Pump performance ── -->
+<div class="sec">Pump Performance</div>
+<div class="pump-grid" id="pump-grid"></div>
+
+<div class="card" style="margin-top:var(--gap)">
+  <h3>Runtime Share (duty balance)</h3>
+  <div class="hbar" id="runtime-share-bar" style="height:28px;margin-top:4px"></div>
+  <div style="display:flex;gap:16px;margin-top:8px;font-size:11px" id="runtime-share-legend"></div>
+</div>
+
+<!-- ── Rain events ── -->
+<div class="sec">Rain Event Analysis (KPI_025 – KPI_032)</div>
+<div class="rain-grid" id="rain-grid"></div>
+
+<!-- ── Flags & triggers ── -->
+<div class="sec">Monthly Flags & Triggers (KPI_034 – KPI_040)</div>
+<div class="two-col">
+  <div>
+    <div class="flag-grid" id="flag-grid"></div>
+  </div>
+  <div class="card">
+    <h3>Trigger Counts by Severity (KPI_037)</h3>
+    <div id="trigger-bars" style="margin-top:8px"></div>
+    <div style="margin-top:16px;font-size:12px;color:var(--muted)">
+      Persistence Index (KPI_038): <span id="kpi038-val" style="font-weight:700;color:var(--text)"></span>
+    </div>
+  </div>
+</div>
+
+<!-- ── Full KPI table ── -->
+<div class="sec">All 40 KPIs — Reference Table</div>
+<div class="card">
+  <div class="kpi-tbl-wrap">
+    <table class="kpi-tbl">
+      <thead><tr>
+        <th>KPI ID</th><th>Name</th><th>Tier</th>
+        <th style="text-align:right">Value</th><th>Units</th><th>Grain</th>
+      </tr></thead>
+      <tbody id="kpi-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+</main>
+<footer>SCADA Lift-Station KPI Dashboard · LS_001 · KPI_001–KPI_040 · Simulated 1-min SCADA data · scada_kpi.ipynb</footer>
+
+<script>
+// ─── Embedded data ────────────────────────────────────────────────────────
+const META = {"station":"LS_001","ww_area_sqft":78.54,"sim_days":7,"n_minutes":10080,"total_run_events":173,"rain_events_count":2,"short_run_thresh_min":4.0,"long_run_thresh_min":45.0,"stress_level_ft":14.5};
+
+const DAILY = [
+  {"date":"2025-05-01","KPI_001":11.3,"KPI_002":10.78,"KPI_003":8.45,"KPI_004":26,"KPI_005":1115,"KPI_017":0.7743,"KPI_018":0.0,"KPI_021":0.2943,"KPI_022":170.9,"KPI_023":209.4,"KPI_024":0.0,"P1_starts":26,"P2_starts":0,"P3_starts":0,"P1_rt_min":1115,"P2_rt_min":0,"P3_rt_min":0,"P1_shortfrac":0.0,"P2_shortfrac":0.0,"P3_shortfrac":0.0},
+  {"date":"2025-05-02","KPI_001":14.04,"KPI_002":11.85,"KPI_003":9.12,"KPI_004":23,"KPI_005":1189,"KPI_017":0.8257,"KPI_018":0.101,"KPI_021":0.3102,"KPI_022":183.5,"KPI_023":261.2,"KPI_024":1.723,"P1_starts":21,"P2_starts":2,"P3_starts":0,"P1_rt_min":987,"P2_rt_min":145,"P3_rt_min":0,"P1_shortfrac":0.0,"P2_shortfrac":0.0,"P3_shortfrac":0.0},
+  {"date":"2025-05-03","KPI_001":11.26,"KPI_002":10.71,"KPI_003":8.41,"KPI_004":27,"KPI_005":1098,"KPI_017":0.7625,"KPI_018":0.0,"KPI_021":0.2887,"KPI_022":168.7,"KPI_023":206.1,"KPI_024":0.0,"P1_starts":27,"P2_starts":0,"P3_starts":0,"P1_rt_min":1098,"P2_rt_min":0,"P3_rt_min":0,"P1_shortfrac":0.0,"P2_shortfrac":0.0,"P3_shortfrac":0.0},
+  {"date":"2025-05-04","KPI_001":11.32,"KPI_002":10.74,"KPI_003":8.43,"KPI_004":26,"KPI_005":1104,"KPI_017":0.7667,"KPI_018":0.0,"KPI_021":0.2901,"KPI_022":169.8,"KPI_023":207.3,"KPI_024":0.0,"P1_starts":26,"P2_starts":0,"P3_starts":0,"P1_rt_min":1104,"P2_rt_min":0,"P3_rt_min":0,"P1_shortfrac":0.0,"P2_shortfrac":0.0,"P3_shortfrac":0.0},
+  {"date":"2025-05-05","KPI_001":18.0,"KPI_002":14.92,"KPI_003":10.87,"KPI_004":25,"KPI_005":1440,"KPI_017":1.0,"KPI_018":0.122,"KPI_021":0.3312,"KPI_022":201.4,"KPI_023":318.5,"KPI_024":3.319,"P1_starts":21,"P2_starts":4,"P3_starts":2,"P1_rt_min":1020,"P2_rt_min":285,"P3_rt_min":210,"P1_shortfrac":0.0,"P2_shortfrac":0.0,"P3_shortfrac":0.0},
+  {"date":"2025-05-06","KPI_001":13.6,"KPI_002":11.94,"KPI_003":9.28,"KPI_004":21,"KPI_005":1257,"KPI_017":0.8729,"KPI_018":0.174,"KPI_021":0.3198,"KPI_022":188.6,"KPI_023":271.3,"KPI_024":1.705,"P1_starts":18,"P2_starts":3,"P3_starts":0,"P1_rt_min":981,"P2_rt_min":141,"P3_rt_min":0,"P1_shortfrac":0.0,"P2_shortfrac":0.0,"P3_shortfrac":0.0},
+  {"date":"2025-05-07","KPI_001":11.25,"KPI_002":10.69,"KPI_003":8.39,"KPI_004":25,"KPI_005":1097,"KPI_017":0.7618,"KPI_018":0.0,"KPI_021":0.2874,"KPI_022":167.8,"KPI_023":204.9,"KPI_024":0.0,"P1_starts":25,"P2_starts":0,"P3_starts":0,"P1_rt_min":1097,"P2_rt_min":0,"P3_rt_min":0,"P1_shortfrac":0.0,"P2_shortfrac":0.0,"P3_shortfrac":0.0}
+];
+
+const PUMPS = [
+  {pump:"P1",role:"duty",rating_a:125.0,total_starts:162,total_rt_min:6840,mean_run_min:42.2,median_run_min:42,short_run_frac:0.0,long_run_frac:0.0,mean_drawdown_ft:5.48,runtime_share:0.898,availability:1},
+  {pump:"P2",role:"lag",rating_a:120.0,total_starts:9,total_rt_min:571,mean_run_min:63.4,median_run_min:60,short_run_frac:0.0,long_run_frac:0.444,mean_drawdown_ft:6.91,runtime_share:0.075,availability:1},
+  {pump:"P3",role:"assist",rating_a:118.0,total_starts:2,total_rt_min:210,mean_run_min:105.0,median_run_min:105,short_run_frac:0.0,long_run_frac:1.0,mean_drawdown_ft:8.62,runtime_share:0.028,availability:1}
+];
+
+const RAIN = [
+  {event_id:"RE_01",start_min:2160,duration_min:180,rain_total_in:0.459,peak_ww_level_ft:14.04,KPI_025:0.459,KPI_026:0.89,KPI_027:0.98,KPI_028:0,KPI_029:0.55,KPI_030:14.04,KPI_031:0.73,KPI_032_starts:0,KPI_032_rt_min:0,event_starts:11,event_rt_min:658},
+  {event_id:"RE_02",start_min:7020,duration_min:300,rain_total_in:1.26,peak_ww_level_ft:18.0,KPI_025:1.26,KPI_026:0.37,KPI_027:1.49,KPI_028:1,KPI_029:0.35,KPI_030:18.0,KPI_031:0.98,KPI_032_starts:2,KPI_032_rt_min:210,event_starts:7,event_rt_min:745}
+];
+
+const KPI_TABLE = [
+  {id:"KPI_001",name:"WetWell_Max_Daily",tier:1,value:18.0,units:"ft",grain:"daily_station"},
+  {id:"KPI_002",name:"WetWell_P95_Daily",tier:2,value:12.24,units:"ft",grain:"daily_station"},
+  {id:"KPI_003",name:"WetWell_Mean_Daily",tier:3,value:9.0,units:"ft",grain:"daily_station"},
+  {id:"KPI_004",name:"Total_Starts_Daily",tier:1,value:24.7,units:"starts/day",grain:"daily_station"},
+  {id:"KPI_005",name:"Total_Runtime_Daily",tier:2,value:1185.7,units:"min/day",grain:"daily_station"},
+  {id:"KPI_006",name:"Pump_Starts_Daily (P1)",tier:2,value:22.6,units:"starts/day",grain:"daily_pump"},
+  {id:"KPI_007",name:"Pump_Runtime_Daily (P1)",tier:2,value:977.4,units:"min/day",grain:"daily_pump"},
+  {id:"KPI_008",name:"Pump_Median_Runtime (P1)",tier:1,value:42.0,units:"min/run",grain:"daily_pump"},
+  {id:"KPI_009",name:"Pump_ShortRun_Fraction (P1)",tier:1,value:0.0,units:"fraction",grain:"daily_pump"},
+  {id:"KPI_010",name:"Pump_LongRun_Fraction (P1)",tier:3,value:0.0,units:"fraction",grain:"daily_pump"},
+  {id:"KPI_011",name:"Pump_Median_Current_A (P1)",tier:2,value:111.4,units:"A",grain:"daily_pump"},
+  {id:"KPI_012",name:"Pump_Max_Current_A (P1)",tier:2,value:124.8,units:"A",grain:"daily_pump"},
+  {id:"KPI_013",name:"Pump_Running_Current_Ratio (P1)",tier:1,value:0.891,units:"ratio",grain:"daily_pump"},
+  {id:"KPI_014",name:"Pump_Drawdown_Per_Run (P1)",tier:1,value:5.48,units:"ft/run",grain:"run_event"},
+  {id:"KPI_015",name:"Pump_Drawdown_Rate (P1)",tier:2,value:0.1299,units:"ft/min",grain:"run_event"},
+  {id:"KPI_016",name:"Pump_Drawdown_Per_AmpMin (P1)",tier:3,value:0.001166,units:"ft/(A·min)",grain:"run_event"},
+  {id:"KPI_017",name:"Any_Pump_On_Fraction",tier:3,value:0.8234,units:"fraction",grain:"daily_station"},
+  {id:"KPI_018",name:"TwoPumpsOn_Fraction",tier:1,value:0.0567,units:"fraction",grain:"daily_station"},
+  {id:"KPI_019_P1",name:"Pump_Availability (P1)",tier:1,value:1,units:"flag",grain:"monthly_pump"},
+  {id:"KPI_019_P2",name:"Pump_Availability (P2)",tier:1,value:1,units:"flag",grain:"monthly_pump"},
+  {id:"KPI_019_P3",name:"Pump_Availability (P3)",tier:1,value:1,units:"flag",grain:"monthly_pump"},
+  {id:"KPI_020",name:"Duty_Imbalance_Ratio",tier:2,value:0.898,units:"ratio",grain:"weekly_station"},
+  {id:"KPI_021",name:"WetWell_Fill_Rate_OffPump",tier:2,value:0.30165,units:"ft/min",grain:"minute_station"},
+  {id:"KPI_022",name:"Inferred_Inflow_OffPump",tier:1,value:178.7,units:"gpm",grain:"daily_station"},
+  {id:"KPI_023",name:"Inferred_Inflow_OffPump_P95",tier:2,value:239.8,units:"gpm",grain:"daily_station"},
+  {id:"KPI_024",name:"Rain_Total (7-day)",tier:2,value:5.047,units:"in/period",grain:"daily_station"},
+  {id:"KPI_025_E1",name:"Rain_Event_Total (RE_01)",tier:2,value:0.459,units:"in/event",grain:"rain_event"},
+  {id:"KPI_026_E1",name:"Rain_Response_Uplift_Starts (RE_01)",tier:1,value:0.89,units:"ratio",grain:"rain_event"},
+  {id:"KPI_027_E1",name:"Rain_Response_Uplift_Runtime (RE_01)",tier:1,value:0.98,units:"ratio",grain:"rain_event"},
+  {id:"KPI_028_E1",name:"Rain_Response_Lag (RE_01)",tier:2,value:0,units:"min",grain:"rain_event"},
+  {id:"KPI_029_E1",name:"Recovery_Time_After_Rain (RE_01)",tier:1,value:0.55,units:"hr",grain:"rain_event"},
+  {id:"KPI_030_E1",name:"Event_Peak_WetWell (RE_01)",tier:1,value:14.04,units:"ft",grain:"rain_event"},
+  {id:"KPI_031_E1",name:"Event_MultiPump_Dependency (RE_01)",tier:2,value:0.73,units:"fraction",grain:"rain_event"},
+  {id:"KPI_032_E1",name:"Event_AssistPump_Use (RE_01 starts)",tier:2,value:0,units:"starts/event",grain:"rain_event"},
+  {id:"KPI_033",name:"DryWeather_AssistPump_Use",tier:2,value:0.0,units:"starts/day",grain:"daily_pump"},
+  {id:"KPI_034",name:"HighWetWell_Days_Count",tier:2,value:1,units:"days",grain:"monthly_station"},
+  {id:"KPI_035_P1",name:"ShortCycling_Days_Count (P1)",tier:2,value:0,units:"days",grain:"monthly_pump"},
+  {id:"KPI_036",name:"RainStress_Events_Count",tier:2,value:0,units:"events",grain:"monthly_station"},
+  {id:"KPI_037_HIGH",name:"Trigger_Count HIGH",tier:3,value:1,units:"count",grain:"daily_station"},
+  {id:"KPI_037_MED",name:"Trigger_Count MEDIUM",tier:3,value:0,units:"count",grain:"daily_station"},
+  {id:"KPI_038",name:"Trigger_Persistence_Index",tier:3,value:9,units:"score",grain:"monthly_station"},
+  {id:"KPI_039",name:"Resilience_Concern_Flag",tier:1,value:0,units:"flag",grain:"monthly_station"},
+  {id:"KPI_040",name:"Capacity_Control_Review_Flag",tier:1,value:0,units:"flag",grain:"monthly_station"}
+];
+
+// 5-min time-series (generated from simulation pattern)
+function genTS(){
+  const pts=[];
+  const T=10080, STEP=5;
+  let level=8.0;
+  let p1=false,p2=false,p3=false;
+  for(let t=0;t<T;t+=STEP){
+    // rain bonus
+    let rainBonus=0;
+    for(const [start,dur,peak] of [[2160,180,0.08],[7020,300,0.14]]){
+      if(t>=start){const el=t-start;if(el<dur*3)rainBonus+=peak*7000*Math.exp(-el/(dur*0.9));}
+    }
+    const hr=(t%1440)/60;
+    const qin=Math.max(40,155+55*Math.exp(-0.5*((hr-7)/1.5)**2)+40*Math.exp(-0.5*((hr-20)/2)**2)+(Math.random()-0.5)*10)+rainBonus;
+    const rain=[[2160,180,0.08],[7020,300,0.14]].reduce((s,[st,du,pk])=>{
+      if(st<=t&&t<st+du){const ph=(t-st)/du;return s+pk*Math.exp(-8*(ph-.5)**2)/5;}return s;},0);
+    if(!p1&&level>=11.0)p1=true; else if(p1&&level<=5.5)p1=false;
+    if(!p2&&level>=12.5)p2=true; else if(p2&&level<=7.0)p2=false;
+    if(!p3&&level>=14.0)p3=true; else if(p3&&level<=8.5)p3=false;
+    const qout=(p1?270:0)+(p2?265:0)+(p3?260:0);
+    level=Math.max(2,Math.min(18,level+(qin-qout)/(78.54*7.4805)*STEP));
+    const d=new Date(2025,4,1);d.setMinutes(t);
+    pts.push({ts:d.toISOString().slice(0,16).replace('T',' '),ww:+level.toFixed(2),
+      P1:p1?1:0,P2:p2?1:0,P3:p3?1:0,n:+(p1)+(+p2)+(+p3),
+      rain:+(rain*60).toFixed(3)});
+  }
+  return pts;
+}
+const TS = genTS();
+
+// ─── Helpers ─────────────────────────────────────────────────────────────
+function cssv(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+const C={blue:cssv('--blue'),cyan:cssv('--cyan'),green:cssv('--green'),
+  yellow:cssv('--yellow'),red:cssv('--red'),purple:cssv('--purple'),
+  orange:cssv('--orange'),muted:cssv('--muted'),border:cssv('--border'),
+  surf2:cssv('--surf2'),bg:cssv('--bg')};
+const PUMP_COLORS=['#3b82f6','#22d3ee','#a855f7'];
+const DATE_LABELS=DAILY.map(d=>d.date.slice(5));  // MM-DD
+
+// ─── Header badges ───────────────────────────────────────────────────────
+const hdrBadges=document.getElementById('hdr-badges');
+hdrBadges.innerHTML=`
+  <span class="badge blue">${META.total_run_events} runs</span>
+  <span class="badge blue">${META.sim_days} days · ${META.n_minutes.toLocaleString()} min</span>
+  <span class="badge green">All pumps available</span>
+  <span class="badge red">1 HIGH-WW day</span>`;
+
+// ─── Headline KPI cards ───────────────────────────────────────────────────
+const hCards=[
+  {icon:'📏',val:'18.0 ft',lbl:'Peak Wet-Well Level',cls:'alert'},
+  {icon:'💧',val:'11.0 ft',lbl:'Mean WW Level (P50)',cls:'t2'},
+  {icon:'⚙️',val:'24.7',lbl:'Mean Daily Starts',cls:'t1'},
+  {icon:'⏱️',val:'1,186 min',lbl:'Mean Daily Runtime',cls:'t1'},
+  {icon:'🌧️',val:'5.0 in',lbl:'Total 7-Day Rainfall',cls:'t2'},
+  {icon:'🔄',val:'82.3%',lbl:'Any Pump On Fraction',cls:'t2'},
+  {icon:'👥',val:'5.7%',lbl:'Two-Pump Fraction',cls:'t1'},
+  {icon:'📈',val:'178.7 gpm',lbl:'Mean Off-Pump Inflow',cls:'t1'},
+  {icon:'📊',val:'0.891',lbl:'P1 Current Ratio',cls:'t2'},
+  {icon:'⬇️',val:'5.48 ft/run',lbl:'P1 Mean Drawdown',cls:'t1'},
+  {icon:'🚨',val:'1',lbl:'HIGH Triggers',cls:'alert'},
+  {icon:'✅',val:'3/3',lbl:'Pump Availability',cls:'t1'},
+];
+const hg=document.getElementById('headline-grid');
+hCards.forEach(k=>{hg.innerHTML+=`<div class="kpi-card ${k.cls}"><div class="kpi-icon">${k.icon}</div><div class="kpi-val">${k.val}</div><div class="kpi-lbl">${k.lbl}</div></div>`;});
+
+// ─── Time-series SVG chart ────────────────────────────────────────────────
+(function(){
+  const W=1200,PH=200,RH=50,PumpH=24,PAD={t:20,r:10,b:30,l:50};
+  const ww_vals=TS.map(p=>p.ww);
+  const rain_vals=TS.map(p=>p.rain);
+  const totalH=PH+RH+PumpH*3+PAD.t+PAD.b+16;
+  const chartW=W-PAD.l-PAD.r;
+  const n=TS.length;
+  const x=i=>PAD.l+i/n*chartW;
+  const yWW=v=>PAD.t+PH*(1-(v-2)/16);  // 2-18 ft
+  const yRain=v=>{const top=PAD.t+PH+8;return top+RH*(1-v/Math.max(1,...rain_vals)*0.9);};
+  const pumpTop=(pi)=>PAD.t+PH+8+RH+8+pi*(PumpH+2);
+
+  // WW path
+  let wwPath=`M${x(0)},${yWW(ww_vals[0])}`;
+  for(let i=1;i<n;i++) wwPath+=`L${x(i)},${yWW(ww_vals[i])}`;
+
+  // Rain area
+  let rainPath=`M${x(0)},${yRain(0)}`;
+  for(let i=0;i<n;i++) rainPath+=`L${x(i)},${yRain(rain_vals[i])}`;
+  rainPath+=`L${x(n-1)},${yRain(0)}Z`;
+
+  // Pump status rects
+  const pumpRects=['P1','P2','P3'].map((p,pi)=>{
+    let rects='';
+    let start=null;
+    TS.forEach((pt,i)=>{
+      const on=pt[p]===1;
+      if(on&&start===null)start=i;
+      if(!on&&start!==null){rects+=`<rect x="${x(start)}" y="${pumpTop(pi)+2}" width="${x(i)-x(start)}" height="${PumpH-4}" fill="${PUMP_COLORS[pi]}" opacity=".85"/>`;start=null;}
+    });
+    if(start!==null) rects+=`<rect x="${x(start)}" y="${pumpTop(pi)+2}" width="${x(n-1)-x(start)}" height="${PumpH-4}" fill="${PUMP_COLORS[pi]}" opacity=".85"/>`;
+    return rects;
+  }).join('');
+
+  // Day grid lines
+  let dayLines='';
+  for(let d=0;d<=7;d++){
+    const xi=x(d*1440/5);
+    dayLines+=`<line x1="${xi}" y1="${PAD.t}" x2="${xi}" y2="${pumpTop(2)+PumpH}" stroke="${C.border}" stroke-width=".5"/>`;
+    if(d<7){
+      const lbl=['5/1','5/2','5/3','5/4','5/5','5/6','5/7'][d];
+      dayLines+=`<text x="${xi+4}" y="${PAD.t+PH+4}" fill="${C.muted}" font-size="10">${lbl}</text>`;
+    }
+  }
+
+  // WW level grid (2,6,10,14,18)
+  let wwGrid='';
+  [2,6,10,14,18].forEach(v=>{
+    const y=yWW(v);
+    wwGrid+=`<line x1="${PAD.l}" y1="${y}" x2="${W-PAD.r}" y2="${y}" stroke="${C.border}" stroke-width=".5" stroke-dasharray="4,3"/>`;
+    wwGrid+=`<text x="${PAD.l-4}" y="${y+4}" fill="${C.muted}" font-size="10" text-anchor="end">${v}ft</text>`;
+  });
+  // Stress threshold
+  const yst=yWW(14.5);
+  wwGrid+=`<line x1="${PAD.l}" y1="${yst}" x2="${W-PAD.r}" y2="${yst}" stroke="${C.red}" stroke-width="1" stroke-dasharray="6,3" opacity=".6"/>`;
+  wwGrid+=`<text x="${W-PAD.r-2}" y="${yst-3}" fill="${C.red}" font-size="10" text-anchor="end" opacity=".8">14.5ft alarm</text>`;
+
+  // Rain event bands
+  let rainBands='';
+  [[2160,180],[7020,300]].forEach(([sm,dm])=>{
+    const x1=x(sm/5),x2=x((sm+dm)/5);
+    rainBands+=`<rect x="${x1}" y="${PAD.t}" width="${x2-x1}" height="${PH+8+RH}" fill="${C.cyan}" opacity=".05"/>`;
+  });
+
+  // Pump labels
+  const pumpLabels=['P1 Duty','P2 Lag','P3 Assist'].map((lbl,pi)=>`
+    <text x="${PAD.l-4}" y="${pumpTop(pi)+PumpH/2+4}" fill="${PUMP_COLORS[pi]}" font-size="10" text-anchor="end">${lbl}</text>
+    <rect x="${PAD.l}" y="${pumpTop(pi)}" width="${chartW}" height="${PumpH}" fill="${C.surf2}" opacity=".5" rx="2"/>`).join('');
+
+  const svg=`<svg class="chart" viewBox="0 0 ${W} ${totalH}" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="wwGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="${C.cyan}" stop-opacity=".3"/>
+        <stop offset="100%" stop-color="${C.cyan}" stop-opacity="0"/>
+      </linearGradient>
+      <linearGradient id="rainGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="${C.blue}" stop-opacity=".6"/>
+        <stop offset="100%" stop-color="${C.blue}" stop-opacity=".05"/>
+      </linearGradient>
+    </defs>
+    ${rainBands}${dayLines}${wwGrid}
+    <!-- Rain area -->
+    <path d="${rainPath}" fill="url(#rainGrad)"/>
+    <!-- WW fill under -->
+    <path d="${wwPath} L${x(n-1)},${yWW(2)} L${x(0)},${yWW(2)} Z" fill="url(#wwGrad)"/>
+    <!-- WW line -->
+    <path d="${wwPath}" fill="none" stroke="${C.cyan}" stroke-width="1.5"/>
+    <!-- Pump status -->
+    ${pumpLabels}${pumpRects}
+    <!-- Chart labels -->
+    <text x="${PAD.l}" y="${PAD.t-4}" fill="${C.muted}" font-size="10">Wet-Well Level (ft)</text>
+    <text x="${PAD.l}" y="${PAD.t+PH+14}" fill="${C.muted}" font-size="10">Rainfall (in/hr)</text>
+    <text x="${PAD.l}" y="${pumpTop(0)-4}" fill="${C.muted}" font-size="10">Pump Status</text>
+  </svg>`;
+  document.getElementById('ts-chart-wrap').innerHTML=svg;
+})();
+
+// ─── Mini SVG bar chart helper ────────────────────────────────────────────
+function makeBarChart(containerId,series,colors,{barW=40,gap=6,maxH=90,showLegend=true}={}){
+  const nDays=DAILY.length;
+  const maxVal=Math.max(...series.flatMap(s=>s.values));
+  if(maxVal===0)return;
+  const W=nDays*(barW*series.length+gap)+60, H=maxH+50;
+  let bars='',legends='';
+  DAILY.forEach((d,di)=>{
+    const groupX=40+di*(barW*series.length+gap);
+    series.forEach((s,si)=>{
+      const v=s.values[di];
+      const bh=v/maxVal*maxH;
+      const bx=groupX+si*barW;
+      bars+=`<rect x="${bx}" y="${maxH-bh+10}" width="${barW-2}" height="${bh}" fill="${colors[si]}" rx="2" opacity=".85"/>`;
+      if(v>0) bars+=`<text x="${bx+barW/2-1}" y="${maxH-bh+7}" fill="${colors[si]}" font-size="9" text-anchor="middle">${v}</text>`;
+    });
+    bars+=`<text x="${groupX+barW*series.length/2}" y="${maxH+22}" fill="${C.muted}" font-size="10" text-anchor="middle">${DATE_LABELS[di]}</text>`;
+  });
+  // Grid
+  let grid='';
+  const steps=4;
+  for(let i=0;i<=steps;i++){
+    const y=10+maxH/steps*i;
+    const v=Math.round(maxVal*(1-i/steps));
+    grid+=`<line x1="38" y1="${y}" x2="${W-8}" y2="${y}" stroke="${C.border}" stroke-width=".5"/>`;
+    grid+=`<text x="36" y="${y+4}" fill="${C.muted}" font-size="9" text-anchor="end">${v}</text>`;
+  }
+  if(showLegend){
+    series.forEach((s,si)=>{
+      legends+=`<tspan fill="${colors[si]}">■ ${s.name}  </tspan>`;
+    });
+  }
+  const svg=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;min-width:${W*0.6}px">
+    ${grid}${bars}
+    ${showLegend?`<text x="40" y="${H-4}" font-size="10">${legends}</text>`:''}
+  </svg>`;
+  document.getElementById(containerId).innerHTML=svg;
+}
+
+makeBarChart('starts-chart',[
+  {name:'P1',values:DAILY.map(d=>d.P1_starts)},
+  {name:'P2',values:DAILY.map(d=>d.P2_starts)},
+  {name:'P3',values:DAILY.map(d=>d.P3_starts)},
+],PUMP_COLORS);
+
+makeBarChart('rt-chart',[
+  {name:'P1',values:DAILY.map(d=>d.P1_rt_min)},
+  {name:'P2',values:DAILY.map(d=>d.P2_rt_min)},
+  {name:'P3',values:DAILY.map(d=>d.P3_rt_min)},
+],PUMP_COLORS);
+
+// Max WW level chart
+(function(){
+  const maxH=90,barW=60,gap=10,nD=DAILY.length;
+  const maxV=18,W=nD*(barW+gap)+60,H=maxH+50;
+  let bars='',grid='';
+  DAILY.forEach((d,i)=>{
+    const bh=d.KPI_001/maxV*maxH;
+    const bx=40+i*(barW+gap);
+    const isStress=d.KPI_001>14.5;
+    const col=isStress?C.red:d.KPI_024>0?C.cyan:C.blue;
+    bars+=`<rect x="${bx}" y="${maxH-bh+10}" width="${barW-2}" height="${bh}" fill="${col}" rx="2" opacity=".85"/>`;
+    bars+=`<text x="${bx+barW/2-1}" y="${maxH-bh+7}" fill="${col}" font-size="9" text-anchor="middle">${d.KPI_001.toFixed(1)}</text>`;
+    if(d.KPI_024>0) bars+=`<text x="${bx+barW/2-1}" y="${maxH+22+14}" fill="${C.cyan}" font-size="9" text-anchor="middle">🌧${d.KPI_024.toFixed(1)}"</text>`;
+    bars+=`<text x="${bx+barW/2-1}" y="${maxH+22}" fill="${C.muted}" font-size="10" text-anchor="middle">${DATE_LABELS[i]}</text>`;
+  });
+  // Stress line
+  const stY=10+maxH*(1-14.5/maxV);
+  bars+=`<line x1="38" y1="${stY}" x2="${W-8}" y2="${stY}" stroke="${C.red}" stroke-width="1" stroke-dasharray="5,3" opacity=".7"/>`;
+  [0,6,12,18].forEach(v=>{const y=10+maxH*(1-v/maxV);grid+=`<line x1="38" y1="${y}" x2="${W-8}" y2="${y}" stroke="${C.border}" stroke-width=".5"/><text x="36" y="${y+4}" fill="${C.muted}" font-size="9" text-anchor="end">${v}ft</text>`;});
+  document.getElementById('ww-max-chart').innerHTML=`<svg viewBox="0 0 ${W} ${H+20}" style="width:100%;min-width:${W*0.6}px">${grid}${bars}</svg>`;
+})();
+
+// Inflow chart (mean + P95)
+(function(){
+  const maxH=90,barW=50,gap=14,nD=DAILY.length;
+  const maxV=Math.max(...DAILY.map(d=>d.KPI_023))*1.1;
+  const W=nD*(barW*2+gap)+60,H=maxH+50;
+  let bars='',grid='';
+  DAILY.forEach((d,i)=>{
+    const bx=40+i*(barW*2+gap);
+    const bh1=d.KPI_022/maxV*maxH;
+    const bh2=d.KPI_023/maxV*maxH;
+    bars+=`<rect x="${bx}" y="${maxH-bh1+10}" width="${barW-2}" height="${bh1}" fill="${C.green}" rx="2" opacity=".8"/>`;
+    bars+=`<rect x="${bx+barW}" y="${maxH-bh2+10}" width="${barW-2}" height="${bh2}" fill="${C.yellow}" rx="2" opacity=".7"/>`;
+    bars+=`<text x="${bx+barW-1}" y="${maxH+22}" fill="${C.muted}" font-size="10" text-anchor="middle">${DATE_LABELS[i]}</text>`;
+  });
+  [0,100,200,300].forEach(v=>{if(v>maxV)return;const y=10+maxH*(1-v/maxV);grid+=`<line x1="38" y1="${y}" x2="${W-8}" y2="${y}" stroke="${C.border}" stroke-width=".5"/><text x="36" y="${y+4}" fill="${C.muted}" font-size="9" text-anchor="end">${v}</text>`;});
+  bars+=`<text x="40" y="${H+6}" font-size="10"><tspan fill="${C.green}">■ Mean  </tspan><tspan fill="${C.yellow}">■ P95</tspan></text>`;
+  document.getElementById('inflow-chart').innerHTML=`<svg viewBox="0 0 ${W} ${H+16}" style="width:100%;min-width:${W*0.6}px">${grid}${bars}</svg>`;
+})();
+
+// ─── Pump cards ───────────────────────────────────────────────────────────
+const pg=document.getElementById('pump-grid');
+PUMPS.forEach((p,i)=>{
+  const col=PUMP_COLORS[i];
+  const avail=p.availability===1;
+  pg.innerHTML+=`<div class="pump-card">
+    <div class="pump-hdr">
+      <div class="pump-badge" style="background:${col}20;color:${col}">${p.pump}</div>
+      <div><div class="pump-name" style="color:${col}">${p.pump} — ${p.role.toUpperCase()}</div>
+        <div class="pump-role">${p.rating_a}A rated · <span class="avail-dot" style="background:${avail?C.green:C.red}"></span>${avail?'Available':'Unavailable'}</div>
+      </div>
+    </div>
+    <div class="pump-stat-grid">
+      <div class="pstat"><span class="pstat-val" style="color:${col}">${p.total_starts}</span><span class="pstat-lbl">Total Starts</span></div>
+      <div class="pstat"><span class="pstat-val" style="color:${col}">${p.total_rt_min.toLocaleString()}</span><span class="pstat-lbl">Runtime (min)</span></div>
+      <div class="pstat"><span class="pstat-val">${p.mean_run_min.toFixed(1)}</span><span class="pstat-lbl">Mean Run (min)</span></div>
+      <div class="pstat"><span class="pstat-val">${p.median_run_min}</span><span class="pstat-lbl">Median Run (min)</span></div>
+      <div class="pstat"><span class="pstat-val">${(p.runtime_share*100).toFixed(1)}%</span><span class="pstat-lbl">Runtime Share</span></div>
+      <div class="pstat"><span class="pstat-val">${p.mean_drawdown_ft.toFixed(2)} ft</span><span class="pstat-lbl">Mean Drawdown</span></div>
+      <div class="pstat"><span class="pstat-val">${(p.short_run_frac*100).toFixed(1)}%</span><span class="pstat-lbl">Short-Run Frac</span></div>
+      <div class="pstat"><span class="pstat-val">${(p.long_run_frac*100).toFixed(1)}%</span><span class="pstat-lbl">Long-Run Frac</span></div>
+    </div>
+  </div>`;
+});
+
+// Runtime share bar
+const rsb=document.getElementById('runtime-share-bar');
+const rsl=document.getElementById('runtime-share-legend');
+PUMPS.forEach((p,i)=>{
+  const w=(p.runtime_share*100).toFixed(1);
+  rsb.innerHTML+=`<div class="hbar-seg" style="width:${w}%;background:${PUMP_COLORS[i]}">${w}%</div>`;
+  rsl.innerHTML+=`<span style="color:${PUMP_COLORS[i]}">■ ${p.pump} ${w}%</span>`;
+});
+
+// ─── Rain event cards ─────────────────────────────────────────────────────
+const rg=document.getElementById('rain-grid');
+RAIN.forEach(re=>{
+  const isHeavy=re.rain_total_in>1.0;
+  const rows=[
+    ['Rain Total',`${re.KPI_025.toFixed(3)} in`],
+    ['Peak Wet-Well',`${re.KPI_030} ft ${re.KPI_030>=14.5?'⚠️':''}`],
+    ['Response Lag (KPI_028)',`${re.KPI_028} min`],
+    ['Recovery Time (KPI_029)',`${re.KPI_029} hr`],
+    ['Starts Uplift (KPI_026)',`${re.KPI_026}×`],
+    ['Runtime Uplift (KPI_027)',`${re.KPI_027}×`],
+    ['Multi-Pump Frac (KPI_031)',`${(re.KPI_031*100).toFixed(0)}%`],
+    ['Assist Pump P3 Starts (KPI_032)',`${re.KPI_032_starts}`],
+    ['Event Runtime (min)',`${re.event_rt_min}`],
+  ];
+  rg.innerHTML+=`<div class="rain-card">
+    <div class="rain-hdr">
+      <div class="rain-icon">${isHeavy?'⛈️':'🌦️'}</div>
+      <div>
+        <div style="font-weight:700;font-size:14px">${re.event_id} — ${isHeavy?'Heavy':'Moderate'} Rain</div>
+        <div style="color:var(--muted);font-size:11px">${re.duration_min} min duration · Peak ${re.rain_total_in.toFixed(3)} in/event</div>
+      </div>
+    </div>
+    ${rows.map(([k,v])=>`<div class="rain-row"><span class="rain-key">${k}</span><span class="rain-val">${v}</span></div>`).join('')}
+  </div>`;
+});
+
+// ─── Flags panel ─────────────────────────────────────────────────────────
+const flagData=[
+  {title:'High-WW Days (KPI_034)',val:'1 day',sub:'Max level exceeded 14.5 ft on 2025-05-05',ok:false},
+  {title:'Short-Cycling Days (KPI_035)',val:'0 days',sub:'No short-cycling detected this period',ok:true},
+  {title:'Rain Stress Events (KPI_036)',val:'0 events',sub:'No uplift >1.5× threshold triggered',ok:true},
+  {title:'Duty Imbalance (KPI_020)',val:'89.8%',sub:'P1 carries almost all runtime — P2/P3 standby healthy',ok:false,warn:true},
+  {title:'Resilience Concern (KPI_039)',val:'FLAG OFF',sub:'No combined stress+redundancy loss detected',ok:true},
+  {title:'Capacity/Control (KPI_040)',val:'FLAG OFF',sub:'No cycling + weak drawdown pattern found',ok:true},
+];
+const fg=document.getElementById('flag-grid');
+flagData.forEach(f=>{
+  const bg=f.ok?'#0e2018':f.warn?'#2e1f00':'#2d0f0e';
+  const col=f.ok?'#3fb950':f.warn?'#d29922':'#f85149';
+  const ic=f.ok?'✅':f.warn?'⚠️':'🚨';
+  fg.innerHTML+=`<div class="flag-card" style="background:${bg};border:1px solid ${col}40">
+    <div class="flag-icon">${ic}</div>
+    <div><div class="flag-title" style="color:${col}">${f.title}</div>
+    <div style="font-size:14px;font-weight:700;color:var(--text);margin:3px 0">${f.val}</div>
+    <div class="flag-sub">${f.sub}</div></div>
+  </div>`;
+});
+
+// Trigger bars
+const tb=document.getElementById('trigger-bars');
+const sevCfg=[['HIGH',1,'#f85149'],['MEDIUM',0,'#d29922'],['LOW',9,'#58a6ff']];
+const maxSev=Math.max(...sevCfg.map(s=>s[1]))||1;
+sevCfg.forEach(([lbl,n,col])=>{
+  const w=Math.max(4,n/Math.max(1,maxSev)*100);
+  tb.innerHTML+=`<div class="sev-row">
+    <span class="sev-label" style="color:${col}">${lbl}</span>
+    <div class="sev-bar-wrap"><div class="sev-bar" style="width:${w}%;background:${col}">${n>0?n:''}</div></div>
+    <span class="sev-count" style="color:${col}">${n}</span>
+  </div>`;
+});
+document.getElementById('kpi038-val').textContent='9';
+
+// ─── Full KPI table ───────────────────────────────────────────────────────
+const tbody=document.getElementById('kpi-tbody');
+KPI_TABLE.forEach(k=>{
+  const tc=['tier1','tier2','tier3'][k.tier-1];
+  const vStr=typeof k.value==='number'&&!Number.isInteger(k.value)?k.value.toFixed(4):String(k.value);
+  const flagStyle=k.units==='flag'?(k.value===1?'color:var(--red);font-weight:700':'color:var(--green);font-weight:700'):'';
+  tbody.innerHTML+=`<tr>
+    <td class="td-mono">${k.id}</td>
+    <td>${k.name}</td>
+    <td><span class="tier-dot ${tc}"></span>T${k.tier}</td>
+    <td style="text-align:right;font-weight:600;${flagStyle}">${vStr}</td>
+    <td style="color:var(--muted)">${k.units}</td>
+    <td style="color:var(--muted);font-size:11px">${k.grain}</td>
+  </tr>`;
+});
+</script>
+</body>
+</html>
