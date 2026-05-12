@@ -1,0 +1,162 @@
+[
+  {
+    "KPI_ID": "GS_AHC_001",
+    "KPI_Name": "Pipe Inventory Completeness",
+    "Value": 98.0,
+    "Units": "%",
+    "Status": "Good",
+    "Bands": "Good \u2265 98; Watch 95\u201398; Action < 95"
+  },
+  {
+    "KPI_ID": "GS_AHC_002",
+    "KPI_Name": "Critical Design Field Completeness",
+    "Value": 75.5,
+    "Units": "%",
+    "Status": "Action",
+    "Bands": "Good \u2265 95; Watch 90\u201395; Action < 90"
+  },
+  {
+    "KPI_ID": "GS_AHC_003",
+    "KPI_Name": "Diameter Completeness",
+    "Value": 98.33,
+    "Units": "%",
+    "Status": "Watch",
+    "Bands": "Good \u2265 99; Action < 98"
+  },
+  {
+    "KPI_ID": "GS_AHC_004",
+    "KPI_Name": "Slope Completeness",
+    "Value": 94.67,
+    "Units": "%",
+    "Status": "Watch",
+    "Bands": "Good \u2265 95; Action < 90"
+  },
+  {
+    "KPI_ID": "GS_AHC_005",
+    "KPI_Name": "Length Consistency (mean % diff)",
+    "Value": 3.3,
+    "Units": "% diff",
+    "Status": "Good",
+    "Bands": "Good \u2264 5; Watch 5\u201310; Action > 10"
+  },
+  {
+    "KPI_ID": "GS_AHC_006",
+    "KPI_Name": "Material Completeness",
+    "Value": 95.58,
+    "Units": "%",
+    "Status": "Good",
+    "Bands": "Good \u2265 95; Watch 90\u201395; Action < 90"
+  },
+  {
+    "KPI_ID": "GS_AHC_007",
+    "KPI_Name": "Age Completeness",
+    "Value": 94.33,
+    "Units": "%",
+    "Status": "Watch",
+    "Bands": "Good \u2265 95; Action < 90"
+  },
+  {
+    "KPI_ID": "GS_AHC_008",
+    "KPI_Name": "Depth Completeness",
+    "Value": 91.08,
+    "Units": "%",
+    "Status": "Good",
+    "Bands": "Good \u2265 90; Action < 85"
+  },
+  {
+    "KPI_ID": "GS_AHC_009",
+    "KPI_Name": "Manhole Connectivity Completeness",
+    "Value": 98.58,
+    "Units": "%",
+    "Status": "Watch",
+    "Bands": "Good \u2265 99; Action < 98"
+  },
+  {
+    "KPI_ID": "GS_AHC_010",
+    "KPI_Name": "Orphan Pipe Rate",
+    "Value": 1.42,
+    "Units": "%",
+    "Status": "Watch",
+    "Bands": "Good < 1; Action \u2265 2"
+  },
+  {
+    "KPI_ID": "GS_AHC_011",
+    "KPI_Name": "GIS-to-Model Linkage Completeness",
+    "Value": 96.25,
+    "Units": "%",
+    "Status": "Good",
+    "Bands": "Good \u2265 95; Watch 85\u201395; Action < 85"
+  },
+  {
+    "KPI_ID": "GS_AHC_012",
+    "KPI_Name": "Model Link Freshness",
+    "Value": 94.2,
+    "Units": "%",
+    "Status": "Watch",
+    "Bands": "Good \u2265 95; Watch 85\u201395; Action < 85"
+  },
+  {
+    "KPI_ID": "GS_AHC_013",
+    "KPI_Name": "Invert Elevation Confidence",
+    "Value": 71.7,
+    "Units": "0\u2013100",
+    "Status": "Watch",
+    "Bands": "Good \u2265 85; Watch 65\u201385; Action < 65"
+  },
+  {
+    "KPI_ID": "GS_AHC_014",
+    "KPI_Name": "Rim Elevation Confidence",
+    "Value": 73.0,
+    "Units": "0\u2013100",
+    "Status": "Watch",
+    "Bands": "Good \u2265 85; Action < 65"
+  },
+  {
+    "KPI_ID": "GS_AHC_015",
+    "KPI_Name": "Pipe Slope Reasonableness Pass Rate",
+    "Value": 91.11,
+    "Units": "%",
+    "Status": "Watch",
+    "Bands": "Good \u2265 95; Action < 90"
+  },
+  {
+    "KPI_ID": "GS_AHC_016",
+    "KPI_Name": "Negative or Flat Slope Rate",
+    "Value": 2.73,
+    "Units": "%",
+    "Status": "Action",
+    "Bands": "Good < 1; Action \u2265 2"
+  },
+  {
+    "KPI_ID": "GS_AHC_017",
+    "KPI_Name": "Design Capacity Estimate Completeness",
+    "Value": 88.92,
+    "Units": "%",
+    "Status": "Action",
+    "Bands": "Good \u2265 95; Action < 90"
+  },
+  {
+    "KPI_ID": "GS_AHC_018",
+    "KPI_Name": "Median Full-Pipe Design Capacity",
+    "Value": 3.642,
+    "Units": "cfs",
+    "Status": "Info",
+    "Bands": "Compare by diameter/slope/design std"
+  },
+  {
+    "KPI_ID": "GS_AHC_019",
+    "KPI_Name": "Asset Age Exceedance Rate",
+    "Value": 12.4,
+    "Units": "%",
+    "Status": "Good",
+    "Bands": "Watch > 20; Action > 35"
+  },
+  {
+    "KPI_ID": "GS_AHC_020",
+    "KPI_Name": "Basin Asset Backbone Completeness",
+    "Value": 87.8,
+    "Units": "0\u2013100",
+    "Status": "Provisional",
+    "Bands": "Certified \u2265 90; Provisional 75\u201390; Not Certified < 75"
+  }
+]

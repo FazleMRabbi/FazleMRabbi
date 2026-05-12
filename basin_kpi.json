@@ -1,0 +1,42 @@
+[
+  {
+    "Basin": "Basin_A",
+    "Pipes": 381,
+    "InvComp%": 97.38,
+    "DiamComp%": 97.64,
+    "MatComp%": 96.85,
+    "MHConn%": 97.9,
+    "NegSlope%": 2.76,
+    "ModelLink%": 95.01
+  },
+  {
+    "Basin": "Basin_B",
+    "Pipes": 299,
+    "InvComp%": 97.99,
+    "DiamComp%": 98.33,
+    "MatComp%": 93.98,
+    "MHConn%": 98.33,
+    "NegSlope%": 2.52,
+    "ModelLink%": 96.32
+  },
+  {
+    "Basin": "Basin_C",
+    "Pipes": 298,
+    "InvComp%": 98.32,
+    "DiamComp%": 98.66,
+    "MatComp%": 95.64,
+    "MHConn%": 99.66,
+    "NegSlope%": 2.8,
+    "ModelLink%": 98.32
+  },
+  {
+    "Basin": "Basin_D",
+    "Pipes": 222,
+    "InvComp%": 98.65,
+    "DiamComp%": 99.1,
+    "MatComp%": 95.5,
+    "MHConn%": 98.65,
+    "NegSlope%": 2.86,
+    "ModelLink%": 95.5
+  }
+]

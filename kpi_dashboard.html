@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Gravity Sewer – Asset Health KPI Dashboard</title>
+<style>
+  /* ── Base ──────────────────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:        #0d1117;
+    --surface:   #161b22;
+    --surface2:  #1e2633;
+    --border:    #30363d;
+    --text:      #e6edf3;
+    --muted:     #8b949e;
+    --good:      #3fb950;
+    --good-bg:   #122a1c;
+    --watch:     #d29922;
+    --watch-bg:  #2e1f00;
+    --action:    #f85149;
+    --action-bg: #2d0f0e;
+    --info:      #58a6ff;
+    --info-bg:   #0d2040;
+    --prov:      #bc8cff;
+    --prov-bg:   #1e1040;
+    --cert:      #3fb950;
+    --cert-bg:   #122a1c;
+    --accent:    #1f6feb;
+    --radius:    8px;
+    --gap:       16px;
+  }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  /* ── Layout ────────────────────────────────────────────────── */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 18px 28px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  header .logo { font-size: 22px; }
+  header h1 { font-size: 18px; font-weight: 600; }
+  header .subtitle { color: var(--muted); font-size: 12px; margin-top: 2px; }
+  header .tag {
+    margin-left: auto;
+    background: var(--accent);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  main { max-width: 1400px; margin: 0 auto; padding: 24px 28px; }
+
+  /* ── Section headings ──────────────────────────────────────── */
+  .section-title {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--muted);
+    margin-bottom: 14px;
+    margin-top: 28px;
+  }
+
+  /* ── Headline KPI cards (top row) ──────────────────────────── */
+  .headline-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--gap);
+  }
+  .h-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .h-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+    border-radius: var(--radius) 0 0 var(--radius);
+  }
+  .h-card.good::before   { background: var(--good); }
+  .h-card.watch::before  { background: var(--watch); }
+  .h-card.action::before { background: var(--action); }
+  .h-card.info::before   { background: var(--info); }
+  .h-card.prov::before   { background: var(--prov); }
+  .h-card .h-id    { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+  .h-card .h-val   { font-size: 32px; font-weight: 700; line-height: 1; }
+  .h-card .h-unit  { font-size: 13px; color: var(--muted); margin-left: 4px; }
+  .h-card .h-name  { font-size: 12px; color: var(--muted); margin-top: 8px; line-height: 1.4; }
+  .h-card .badge   {
+    display: inline-block;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-top: 10px;
+  }
+  .badge.good   { background: var(--good-bg);   color: var(--good);   }
+  .badge.watch  { background: var(--watch-bg);  color: var(--watch);  }
+  .badge.action { background: var(--action-bg); color: var(--action); }
+  .badge.info   { background: var(--info-bg);   color: var(--info);   }
+  .badge.prov   { background: var(--prov-bg);   color: var(--prov);   }
+  .badge.cert   { background: var(--cert-bg);   color: var(--cert);   }
+
+  /* ── KPI detail table ──────────────────────────────────────── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    background: var(--surface2);
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    border-bottom: 1px solid var(--border);
+  }
+  tbody tr { border-bottom: 1px solid var(--border); }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--surface2); }
+  tbody td { padding: 10px 14px; vertical-align: middle; }
+  .td-id   { font-family: monospace; font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .td-name { font-weight: 500; }
+  .td-val  { font-weight: 700; text-align: right; white-space: nowrap; }
+  .td-unit { color: var(--muted); font-size: 12px; white-space: nowrap; }
+  .td-band { color: var(--muted); font-size: 11px; }
+
+  /* ── Progress bar ──────────────────────────────────────────── */
+  .bar-wrap {
+    background: var(--surface2);
+    border-radius: 4px;
+    height: 6px;
+    width: 120px;
+    overflow: hidden;
+    display: inline-block;
+    vertical-align: middle;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width .4s ease;
+  }
+  .bar-fill.good   { background: var(--good); }
+  .bar-fill.watch  { background: var(--watch); }
+  .bar-fill.action { background: var(--action); }
+  .bar-fill.info   { background: var(--info); }
+  .bar-fill.prov   { background: var(--prov); }
+
+  /* ── Basin comparison ──────────────────────────────────────── */
+  .basin-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--gap);
+  }
+  .basin-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+  }
+  .basin-card h3 { font-size: 15px; margin-bottom: 14px; }
+  .basin-card h3 span { color: var(--muted); font-size: 12px; font-weight: 400; margin-left: 6px; }
+  .metric-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    gap: 8px;
+  }
+  .metric-label { font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .metric-right { display: flex; align-items: center; gap: 8px; }
+  .metric-val   { font-size: 12px; font-weight: 600; min-width: 42px; text-align: right; }
+  .b-bar-wrap   {
+    background: var(--surface2);
+    border-radius: 3px;
+    height: 5px;
+    width: 80px;
+    overflow: hidden;
+  }
+  .b-bar-fill { height: 100%; border-radius: 3px; }
+
+  /* ── Gauge / donut for composite score ─────────────────────── */
+  .gauge-row {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    padding: 20px 24px;
+  }
+  .gauge-wrap { position: relative; width: 130px; height: 130px; flex-shrink: 0; }
+  .gauge-wrap svg { width: 130px; height: 130px; }
+  .gauge-center {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
+  .gauge-center .g-val  { font-size: 26px; font-weight: 700; }
+  .gauge-center .g-sub  { font-size: 11px; color: var(--muted); }
+  .gauge-info h2 { font-size: 16px; margin-bottom: 6px; }
+  .gauge-info p  { font-size: 13px; color: var(--muted); max-width: 420px; }
+  .gauge-info .bands-list { margin-top: 12px; display: flex; gap: 12px; flex-wrap: wrap; }
+  .band-chip {
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  /* ── Summary counts ────────────────────────────────────────── */
+  .count-grid {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+  }
+  .count-chip {
+    border-radius: 6px;
+    padding: 10px 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .count-chip .c-num { font-size: 22px; font-weight: 700; }
+  .count-chip .c-lbl { font-size: 12px; }
+
+  /* ── Footer ────────────────────────────────────────────────── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 16px 28px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 40px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🌊</div>
+  <div>
+    <h1>Gravity Sewer — Asset Health KPI Dashboard</h1>
+    <div class="subtitle">GS_AHC Series · 1,200 pipes · 4 drainage basins · Mock data · May 2025</div>
+  </div>
+  <div class="tag">Asset Health Completeness</div>
+</header>
+
+<main>
+  <!-- ── Composite score gauge ───────────────────────────────── -->
+  <div class="section-title">Basin Asset Backbone Score (GS_AHC_020)</div>
+  <div class="card" style="margin-bottom:24px;">
+    <div class="gauge-row">
+      <div class="gauge-wrap">
+        <svg viewBox="0 0 36 36">
+          <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                fill="none" stroke="#1e2633" stroke-width="3.5"/>
+          <path id="gauge-arc"
+                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                fill="none" stroke="#bc8cff" stroke-width="3.5"
+                stroke-dasharray="87.8, 100"
+                stroke-linecap="round"/>
+        </svg>
+        <div class="gauge-center">
+          <div class="g-val" style="color:#bc8cff">87.8</div>
+          <div class="g-sub">/100</div>
+        </div>
+      </div>
+      <div class="gauge-info">
+        <h2>Provisional Certification</h2>
+        <p>Weighted composite of inventory completeness, critical design fields, manhole connectivity, invert elevation confidence, GIS–model linkage, and model freshness.</p>
+        <div class="bands-list">
+          <div class="band-chip" style="background:#122a1c;color:#3fb950">Certified ≥ 90</div>
+          <div class="band-chip" style="background:#1e1040;color:#bc8cff">Provisional 75–90</div>
+          <div class="band-chip" style="background:#2d0f0e;color:#f85149">Not Certified &lt; 75</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Headline KPIs ───────────────────────────────────────── -->
+  <div class="section-title">Key KPI Highlights</div>
+  <div class="headline-grid" id="headline-grid"></div>
+
+  <!-- ── Status summary counts ──────────────────────────────── -->
+  <div class="section-title" style="margin-top:32px;">Status Summary</div>
+  <div class="count-grid" id="count-grid"></div>
+
+  <!-- ── Full KPI table ─────────────────────────────────────── -->
+  <div class="section-title">All 20 KPIs — Detail Table</div>
+  <div class="card" style="margin-bottom:24px;">
+    <table id="kpi-table">
+      <thead>
+        <tr>
+          <th>KPI ID</th>
+          <th>Metric</th>
+          <th style="text-align:right">Value</th>
+          <th>Units</th>
+          <th>Progress</th>
+          <th>Status</th>
+          <th>Bands</th>
+        </tr>
+      </thead>
+      <tbody id="kpi-tbody"></tbody>
+    </table>
+  </div>
+
+  <!-- ── Basin comparison ───────────────────────────────────── -->
+  <div class="section-title">Basin-Level Breakdown</div>
+  <div class="basin-grid" id="basin-grid"></div>
+</main>
+
+<footer>Gravity Sewer Asset Health KPI Dashboard · GS_AHC_001 – GS_AHC_020 · Mock data generated with Python standard library</footer>
+
+<script>
+// ── Embedded data ─────────────────────────────────────────────
+const KPI_DATA = [
+  {"KPI_ID":"GS_AHC_001","KPI_Name":"Pipe Inventory Completeness","Value":98.0,"Units":"%","Status":"Good","Bands":"Good ≥ 98; Watch 95–98; Action < 95"},
+  {"KPI_ID":"GS_AHC_002","KPI_Name":"Critical Design Field Completeness","Value":75.5,"Units":"%","Status":"Action","Bands":"Good ≥ 95; Watch 90–95; Action < 90"},
+  {"KPI_ID":"GS_AHC_003","KPI_Name":"Diameter Completeness","Value":98.33,"Units":"%","Status":"Watch","Bands":"Good ≥ 99; Action < 98"},
+  {"KPI_ID":"GS_AHC_004","KPI_Name":"Slope Completeness","Value":94.67,"Units":"%","Status":"Watch","Bands":"Good ≥ 95; Action < 90"},
+  {"KPI_ID":"GS_AHC_005","KPI_Name":"Length Consistency (mean % diff)","Value":3.3,"Units":"% diff","Status":"Good","Bands":"Good ≤ 5; Watch 5–10; Action > 10"},
+  {"KPI_ID":"GS_AHC_006","KPI_Name":"Material Completeness","Value":95.58,"Units":"%","Status":"Good","Bands":"Good ≥ 95; Watch 90–95; Action < 90"},
+  {"KPI_ID":"GS_AHC_007","KPI_Name":"Age Completeness","Value":94.33,"Units":"%","Status":"Watch","Bands":"Good ≥ 95; Action < 90"},
+  {"KPI_ID":"GS_AHC_008","KPI_Name":"Depth Completeness","Value":91.08,"Units":"%","Status":"Good","Bands":"Good ≥ 90; Action < 85"},
+  {"KPI_ID":"GS_AHC_009","KPI_Name":"Manhole Connectivity Completeness","Value":98.58,"Units":"%","Status":"Watch","Bands":"Good ≥ 99; Action < 98"},
+  {"KPI_ID":"GS_AHC_010","KPI_Name":"Orphan Pipe Rate","Value":1.42,"Units":"%","Status":"Watch","Bands":"Good < 1; Action ≥ 2"},
+  {"KPI_ID":"GS_AHC_011","KPI_Name":"GIS-to-Model Linkage Completeness","Value":96.25,"Units":"%","Status":"Good","Bands":"Good ≥ 95; Watch 85–95; Action < 85"},
+  {"KPI_ID":"GS_AHC_012","KPI_Name":"Model Link Freshness","Value":94.2,"Units":"%","Status":"Watch","Bands":"Good ≥ 95; Watch 85–95; Action < 85"},
+  {"KPI_ID":"GS_AHC_013","KPI_Name":"Invert Elevation Confidence","Value":71.7,"Units":"0–100","Status":"Watch","Bands":"Good ≥ 85; Watch 65–85; Action < 65"},
+  {"KPI_ID":"GS_AHC_014","KPI_Name":"Rim Elevation Confidence","Value":73.0,"Units":"0–100","Status":"Watch","Bands":"Good ≥ 85; Action < 65"},
+  {"KPI_ID":"GS_AHC_015","KPI_Name":"Pipe Slope Reasonableness Pass Rate","Value":91.11,"Units":"%","Status":"Watch","Bands":"Good ≥ 95; Action < 90"},
+  {"KPI_ID":"GS_AHC_016","KPI_Name":"Negative or Flat Slope Rate","Value":2.73,"Units":"%","Status":"Action","Bands":"Good < 1; Action ≥ 2"},
+  {"KPI_ID":"GS_AHC_017","KPI_Name":"Design Capacity Estimate Completeness","Value":88.92,"Units":"%","Status":"Action","Bands":"Good ≥ 95; Action < 90"},
+  {"KPI_ID":"GS_AHC_018","KPI_Name":"Median Full-Pipe Design Capacity","Value":3.642,"Units":"cfs","Status":"Info","Bands":"Compare by diameter/slope/design std"},
+  {"KPI_ID":"GS_AHC_019","KPI_Name":"Asset Age Exceedance Rate","Value":12.4,"Units":"%","Status":"Good","Bands":"Watch > 20; Action > 35"},
+  {"KPI_ID":"GS_AHC_020","KPI_Name":"Basin Asset Backbone Completeness","Value":87.8,"Units":"0–100","Status":"Provisional","Bands":"Certified ≥ 90; Provisional 75–90; Not Certified < 75"}
+];
+
+const BASIN_DATA = [
+  {"Basin":"Basin_A","Pipes":381,"InvComp%":97.38,"DiamComp%":97.64,"MatComp%":96.85,"MHConn%":97.9,"NegSlope%":2.76,"ModelLink%":95.01},
+  {"Basin":"Basin_B","Pipes":299,"InvComp%":97.99,"DiamComp%":98.33,"MatComp%":93.98,"MHConn%":98.33,"NegSlope%":2.52,"ModelLink%":96.32},
+  {"Basin":"Basin_C","Pipes":298,"InvComp%":98.32,"DiamComp%":98.66,"MatComp%":95.64,"MHConn%":99.66,"NegSlope%":2.80,"ModelLink%":98.32},
+  {"Basin":"Basin_D","Pipes":222,"InvComp%":98.65,"DiamComp%":99.10,"MatComp%":95.50,"MHConn%":98.65,"NegSlope%":2.86,"ModelLink%":95.50}
+];
+
+// ── Helpers ───────────────────────────────────────────────────
+const STATUS_CLASS = {
+  Good:'good', Watch:'watch', Action:'action', Info:'info',
+  Provisional:'prov', Certified:'cert', 'Not Certified':'action'
+};
+
+function cls(status) { return STATUS_CLASS[status] || 'info'; }
+
+function badgeHtml(status) {
+  return `<span class="badge ${cls(status)}">${status}</span>`;
+}
+
+// normalise value to 0–100 for progress bar
+function normalise(kpi) {
+  const v = kpi.Value;
+  if (kpi.Units === '% diff') return Math.max(0, 100 - v * 5);   // lower is better, 0%=100, 20%=0
+  if (kpi.KPI_ID === 'GS_AHC_010') return Math.max(0, 100 - v * 20); // orphan: lower better
+  if (kpi.KPI_ID === 'GS_AHC_016') return Math.max(0, 100 - v * 20); // neg slope: lower better
+  if (kpi.KPI_ID === 'GS_AHC_019') return Math.max(0, 100 - v * 2);  // age exceedance: lower better
+  if (kpi.KPI_ID === 'GS_AHC_018') return null;   // capacity – no bar
+  return Math.min(100, v);                          // everything else: percentage or 0-100 score
+}
+
+// ── Headline cards ────────────────────────────────────────────
+const HIGHLIGHT_IDS = ['GS_AHC_001','GS_AHC_002','GS_AHC_009','GS_AHC_016',
+                       'GS_AHC_011','GS_AHC_013','GS_AHC_019','GS_AHC_018'];
+const grid = document.getElementById('headline-grid');
+HIGHLIGHT_IDS.forEach(id => {
+  const k = KPI_DATA.find(x => x.KPI_ID === id);
+  if (!k) return;
+  const dispVal = Number.isInteger(k.Value) ? k.Value : k.Value.toFixed(2);
+  grid.innerHTML += `
+    <div class="h-card ${cls(k.Status)}">
+      <div class="h-id">${k.KPI_ID}</div>
+      <div><span class="h-val">${dispVal}</span><span class="h-unit">${k.Units}</span></div>
+      <div class="h-name">${k.KPI_Name}</div>
+      ${badgeHtml(k.Status)}
+    </div>`;
+});
+
+// ── Status count chips ────────────────────────────────────────
+const counts = {};
+KPI_DATA.forEach(k => { counts[k.Status] = (counts[k.Status] || 0) + 1; });
+const countColors = {
+  Good:   {bg:'#122a1c', color:'#3fb950'},
+  Watch:  {bg:'#2e1f00', color:'#d29922'},
+  Action: {bg:'#2d0f0e', color:'#f85149'},
+  Info:   {bg:'#0d2040', color:'#58a6ff'},
+  Provisional:{bg:'#1e1040', color:'#bc8cff'},
+  Certified:  {bg:'#122a1c', color:'#3fb950'},
+  'Not Certified':{bg:'#2d0f0e', color:'#f85149'},
+};
+const cg = document.getElementById('count-grid');
+Object.entries(counts).forEach(([status, n]) => {
+  const c = countColors[status] || {bg:'#161b22', color:'#8b949e'};
+  cg.innerHTML += `
+    <div class="count-chip" style="background:${c.bg}">
+      <div class="c-num" style="color:${c.color}">${n}</div>
+      <div class="c-lbl" style="color:${c.color}">${status}</div>
+    </div>`;
+});
+
+// ── Full KPI table ────────────────────────────────────────────
+const tbody = document.getElementById('kpi-tbody');
+KPI_DATA.forEach(k => {
+  const norm = normalise(k);
+  const barHtml = norm !== null
+    ? `<div class="bar-wrap"><div class="bar-fill ${cls(k.Status)}" style="width:${norm.toFixed(1)}%"></div></div>`
+    : '<span style="color:var(--muted);font-size:11px">—</span>';
+  const dispVal = (typeof k.Value === 'number' && !Number.isInteger(k.Value))
+    ? k.Value.toFixed(2) : k.Value;
+  tbody.innerHTML += `
+    <tr>
+      <td class="td-id">${k.KPI_ID}</td>
+      <td class="td-name">${k.KPI_Name}</td>
+      <td class="td-val" style="color:var(--${cls(k.Status) === 'prov' ? 'prov' : cls(k.Status) === 'cert' ? 'good' : cls(k.Status)})">${dispVal}</td>
+      <td class="td-unit">${k.Units}</td>
+      <td>${barHtml}</td>
+      <td>${badgeHtml(k.Status)}</td>
+      <td class="td-band">${k.Bands}</td>
+    </tr>`;
+});
+
+// ── Basin cards ───────────────────────────────────────────────
+const BASIN_COLORS = ['#1f6feb','#bc8cff','#3fb950','#d29922'];
+const BASIN_METRICS = [
+  {key:'InvComp%',   label:'Inventory Completeness', higher: true},
+  {key:'DiamComp%',  label:'Diameter Completeness',  higher: true},
+  {key:'MatComp%',   label:'Material Completeness',  higher: true},
+  {key:'MHConn%',    label:'MH Connectivity',         higher: true},
+  {key:'NegSlope%',  label:'Neg/Flat Slope Rate',     higher: false},
+  {key:'ModelLink%', label:'Model Linkage',           higher: true},
+];
+
+const bg = document.getElementById('basin-grid');
+BASIN_DATA.forEach((b, i) => {
+  const color = BASIN_COLORS[i % BASIN_COLORS.length];
+  let rows = '';
+  BASIN_METRICS.forEach(m => {
+    const v = b[m.key];
+    const barPct = m.higher ? Math.min(100, v) : Math.max(0, 100 - v * 10);
+    const valColor = m.higher
+      ? (v >= 97 ? 'var(--good)' : v >= 90 ? 'var(--watch)' : 'var(--action)')
+      : (v < 1 ? 'var(--good)' : v < 2 ? 'var(--watch)' : 'var(--action)');
+    rows += `
+      <div class="metric-row">
+        <span class="metric-label">${m.label}</span>
+        <div class="metric-right">
+          <span class="metric-val" style="color:${valColor}">${v.toFixed(1)}%</span>
+          <div class="b-bar-wrap">
+            <div class="b-bar-fill" style="width:${barPct.toFixed(1)}%;background:${color}"></div>
+          </div>
+        </div>
+      </div>`;
+  });
+
+  bg.innerHTML += `
+    <div class="basin-card">
+      <h3 style="color:${color}">${b.Basin}<span>${b.Pipes} pipes</span></h3>
+      ${rows}
+    </div>`;
+});
+</script>
+</body>
+</html>
