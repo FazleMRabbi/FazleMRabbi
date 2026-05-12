@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Rehab Work Order Dashboard – Contract 4235-101</title>
+<style>
+/* ── Reset & Tokens ───────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d1117; --surf:#161b22; --surf2:#1e2633; --surf3:#252d3a;
+  --border:#30363d; --text:#e6edf3; --muted:#8b949e;
+  --pb:#3b82f6;   --pb-bg:#0d2040;
+  --cipp:#a855f7; --cipp-bg:#1e1040;
+  --ctv:#22d3ee;  --ctv-bg:#042030;
+  --pr:#f97316;   --pr-bg:#2a1200;
+  --small:#3fb950; --med:#d29922; --large:#f85149;
+  --accent:#1f6feb; --radius:8px; --gap:16px;
+}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:14px;line-height:1.5}
+
+/* ── Header ──────────────────────────────────────────────── */
+header{background:var(--surf);border-bottom:1px solid var(--border);padding:16px 28px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.logo{font-size:24px}
+header h1{font-size:17px;font-weight:700}
+.sub{color:var(--muted);font-size:12px;margin-top:2px}
+.hdr-tag{margin-left:auto;background:var(--accent);border-radius:20px;padding:4px 14px;font-size:12px;font-weight:600}
+
+/* ── Main layout ─────────────────────────────────────────── */
+main{max-width:1440px;margin:0 auto;padding:24px 28px}
+.section-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:28px 0 12px}
+
+/* ── KPI headline cards ──────────────────────────────────── */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:var(--gap)}
+.kpi-card{background:var(--surf);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden}
+.kpi-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px}
+.kpi-card.blue::after{background:var(--pb)}
+.kpi-card.purple::after{background:var(--cipp)}
+.kpi-card.cyan::after{background:var(--ctv)}
+.kpi-card.orange::after{background:var(--pr)}
+.kpi-card.green::after{background:#3fb950}
+.kpi-icon{font-size:20px;margin-bottom:8px}
+.kpi-val{font-size:28px;font-weight:700;line-height:1}
+.kpi-unit{font-size:13px;color:var(--muted);margin-left:3px}
+.kpi-lbl{font-size:12px;color:var(--muted);margin-top:6px}
+
+/* ── Two-column panels ───────────────────────────────────── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:var(--gap)}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--gap)}
+@media(max-width:900px){.two-col,.three-col{grid-template-columns:1fr}}
+
+/* ── Chart card ──────────────────────────────────────────── */
+.chart-card{background:var(--surf);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px}
+.chart-card h3{font-size:13px;font-weight:600;margin-bottom:16px;color:var(--text)}
+.chart-card h3 small{font-size:11px;color:var(--muted);font-weight:400;margin-left:6px}
+
+/* ── Horizontal bar chart ────────────────────────────────── */
+.hbar-list{display:flex;flex-direction:column;gap:10px}
+.hbar-row{display:flex;align-items:center;gap:10px}
+.hbar-label{width:130px;font-size:12px;text-align:right;flex-shrink:0;color:var(--muted)}
+.hbar-label.wide{width:160px}
+.hbar-track{flex:1;background:var(--surf2);border-radius:4px;height:20px;overflow:hidden;position:relative}
+.hbar-fill{height:100%;border-radius:4px;display:flex;align-items:center;padding-left:8px;font-size:11px;font-weight:600;white-space:nowrap;transition:width .5s ease}
+.hbar-right{font-size:12px;font-weight:600;width:60px;text-align:left;flex-shrink:0}
+
+/* ── Donut / SVG charts ──────────────────────────────────── */
+.donut-wrap{display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+.donut-svg{flex-shrink:0}
+.donut-legend{display:flex;flex-direction:column;gap:8px}
+.leg-item{display:flex;align-items:center;gap:8px;font-size:12px}
+.leg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.leg-val{font-weight:600;margin-left:auto;padding-left:12px}
+
+/* ── Histogram ───────────────────────────────────────────── */
+.hist-wrap{display:flex;align-items:flex-end;gap:6px;height:120px}
+.hist-bar-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1}
+.hist-bar{width:100%;border-radius:4px 4px 0 0;background:var(--pb);transition:height .4s ease}
+.hist-lbl{font-size:10px;color:var(--muted);text-align:center;white-space:nowrap}
+.hist-cnt{font-size:11px;font-weight:600;color:var(--text)}
+
+/* ── Heat-map cross-tab ──────────────────────────────────── */
+.xtab-wrap{overflow-x:auto}
+.xtab-table{border-collapse:collapse;font-size:12px;width:100%}
+.xtab-table th{background:var(--surf2);padding:6px 10px;text-align:center;font-weight:600;color:var(--muted);border:1px solid var(--border)}
+.xtab-table th.row-hdr{text-align:left}
+.xtab-table td{border:1px solid var(--border);padding:6px 10px;text-align:center;font-weight:600}
+.xtab-table tr:hover td{background:var(--surf2)}
+
+/* ── Data quality ────────────────────────────────────────── */
+.dq-list{display:flex;flex-direction:column;gap:10px}
+.dq-item{background:var(--surf2);border:1px solid var(--border);border-left:4px solid;border-radius:var(--radius);padding:10px 14px}
+.dq-item.warn{border-left-color:#d29922}
+.dq-item.info{border-left-color:#58a6ff}
+.dq-title{font-size:12px;font-weight:600}
+.dq-detail{font-size:11px;color:var(--muted);margin-top:3px}
+.dq-count{float:right;font-size:11px;font-weight:700;padding:1px 8px;border-radius:10px;background:var(--surf3);color:var(--text)}
+
+/* ── Pipe segment table ──────────────────────────────────── */
+.tbl-wrap{overflow-x:auto}
+table.seg-tbl{width:100%;border-collapse:collapse;font-size:12px}
+table.seg-tbl thead th{background:var(--surf2);padding:9px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border);white-space:nowrap}
+table.seg-tbl tbody tr{border-bottom:1px solid var(--border)}
+table.seg-tbl tbody tr:last-child{border-bottom:none}
+table.seg-tbl tbody tr:hover{background:var(--surf2)}
+table.seg-tbl tbody td{padding:8px 12px;vertical-align:middle}
+.td-mono{font-family:monospace;color:var(--muted);font-size:11px}
+.chip{display:inline-block;border-radius:4px;padding:2px 8px;font-size:11px;font-weight:600}
+.chip.pb{background:var(--pb-bg);color:var(--pb)}
+.chip.cipp{background:var(--cipp-bg);color:var(--cipp)}
+.chip.ctv{background:var(--ctv-bg);color:var(--ctv)}
+.chip.pr{background:var(--pr-bg);color:var(--pr)}
+.chip.small{background:#0e2018;color:var(--small)}
+.chip.med{background:#2e1f00;color:var(--med)}
+.chip.large{background:#2d0f0e;color:var(--large)}
+
+/* ── Search / filter ──────────────────────────────────────── */
+.tbl-controls{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.tbl-search{background:var(--surf2);border:1px solid var(--border);border-radius:6px;padding:7px 12px;color:var(--text);font-size:13px;width:220px}
+.tbl-search:focus{outline:none;border-color:var(--accent)}
+.tbl-filter{background:var(--surf2);border:1px solid var(--border);border-radius:6px;padding:7px 12px;color:var(--text);font-size:13px;cursor:pointer}
+.tbl-filter:focus{outline:none;border-color:var(--accent)}
+.row-count{font-size:12px;color:var(--muted);display:flex;align-items:center}
+
+/* ── Footer ───────────────────────────────────────────────── */
+footer{border-top:1px solid var(--border);padding:16px 28px;text-align:center;color:var(--muted);font-size:12px;margin-top:40px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🔧</div>
+  <div>
+    <h1>Rehabilitation Work Order Dashboard</h1>
+    <div class="sub">Contract 4235-101 · WO 3 · PM dba IPR · Gravity Main · 100 pipe segments</div>
+  </div>
+  <div class="hdr-tag">Sewer Rehab</div>
+</header>
+
+<main>
+
+<!-- ── KPI Headline Cards ──────────────────────────────────── -->
+<div class="section-title">Work Order Summary</div>
+<div class="kpi-grid" id="kpi-grid"></div>
+
+<!-- ── Method + Diameter breakdowns ──────────────────────── -->
+<div class="section-title">Work Type & Diameter Analysis</div>
+<div class="two-col">
+  <div class="chart-card">
+    <h3>Rehab Method — Pipe Count <small>% of total</small></h3>
+    <div class="hbar-list" id="wt-count-chart"></div>
+  </div>
+  <div class="chart-card">
+    <h3>Rehab Method — Total Length <small>ft</small></h3>
+    <div class="hbar-list" id="wt-len-chart"></div>
+  </div>
+</div>
+
+<!-- ── Diameter charts ────────────────────────────────────── -->
+<div class="section-title">Diameter Distribution</div>
+<div class="two-col">
+  <div class="chart-card">
+    <h3>Pipe Count by Diameter</h3>
+    <div class="hbar-list" id="diam-count-chart"></div>
+  </div>
+  <div class="chart-card">
+    <h3>Diameter Size Categories<small style="display:block;font-weight:400;color:var(--muted);margin-top:4px">Small ≤8" · Medium 10–15" · Large ≥18"</small></h3>
+    <div class="donut-wrap" id="diam-cat-donut"></div>
+  </div>
+</div>
+
+<!-- ── Length histogram + method donut ────────────────────── -->
+<div class="section-title">Length Distribution & Method Mix</div>
+<div class="two-col">
+  <div class="chart-card">
+    <h3>Pipe Length Histogram <small>ft buckets</small></h3>
+    <div class="hist-wrap" id="histogram"></div>
+  </div>
+  <div class="chart-card">
+    <h3>Method Mix by Pipe Count</h3>
+    <div class="donut-wrap" id="method-donut"></div>
+  </div>
+</div>
+
+<!-- ── Cross-tab heatmap ──────────────────────────────────── -->
+<div class="section-title">Work Type × Diameter Matrix <span style="font-size:11px;color:var(--muted);font-weight:400;margin-left:4px">(pipe count)</span></div>
+<div class="chart-card">
+  <div class="xtab-wrap" id="xtab-wrap"></div>
+</div>
+
+<!-- ── Liner specifications ───────────────────────────────── -->
+<div class="section-title">Liner Specifications</div>
+<div class="two-col" id="liner-section"></div>
+
+<!-- ── Data quality flags ─────────────────────────────────── -->
+<div class="section-title">Data Quality Flags</div>
+<div class="dq-list" id="dq-list"></div>
+
+<!-- ── Pipe segment table ─────────────────────────────────── -->
+<div class="section-title">Pipe Segment Register</div>
+<div class="chart-card">
+  <div class="tbl-controls">
+    <input class="tbl-search" type="text" placeholder="Search IMS / MH / GSM…" id="tbl-search"/>
+    <select class="tbl-filter" id="wt-filter">
+      <option value="">All work types</option>
+      <option>Pipe Bursting</option>
+      <option>Cured-in-Place</option>
+      <option>CTV</option>
+      <option>Point Repair</option>
+    </select>
+    <select class="tbl-filter" id="diam-filter">
+      <option value="">All diameters</option>
+    </select>
+    <span class="row-count" id="row-count"></span>
+  </div>
+  <div class="tbl-wrap">
+    <table class="seg-tbl">
+      <thead>
+        <tr>
+          <th>IMS</th><th>UFID</th><th>US Manhole</th><th>DS Manhole</th>
+          <th>Diam (in)</th><th>Length (ft)</th><th>Work Type</th>
+          <th>Size Cat.</th><th>Length Cat.</th><th>Spec Detail</th>
+        </tr>
+      </thead>
+      <tbody id="seg-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+</main>
+<footer>Rehab WO Dashboard · Contract 4235-101 / WO 3 · Contractor: PM dba IPR · Data prepared via rehab_wo_analysis.ipynb</footer>
+
+<script>
+// ── Embedded data ─────────────────────────────────────────────────────────
+const D = {
+  meta: {"contract":"4235-101","wo":3,"contractor":"PM dba IPR","asset_type":"Gravity Main","total_pipes":100,"total_length_ft":25093,"total_length_mi":4.75,"mean_length_ft":253.5,"median_length_ft":279.0,"min_length_ft":8,"max_length_ft":523,"structural_pipes":90,"inspection_pipes":10},
+  wt: [
+    {work_type:"Pipe Bursting",method_short:"Pipe Bursting",count:71,pct_count:71.0,total_length_ft:16044,pct_length:63.9},
+    {work_type:"Cured-in-Place",method_short:"CIPP Lining",count:18,pct_count:18.0,total_length_ft:4956,pct_length:19.8},
+    {work_type:"CTV",method_short:"CTV Inspection",count:10,pct_count:10.0,total_length_ft:3804,pct_length:15.2},
+    {work_type:"Point Repair",method_short:"Point Repair",count:1,pct_count:1.0,total_length_ft:289,pct_length:1.2}
+  ],
+  diam: [
+    {diameter_in:6,count:12,total_length_ft:1453,pct_count:12.0},
+    {diameter_in:8,count:57,total_length_ft:14793,pct_count:57.0},
+    {diameter_in:10,count:5,total_length_ft:1692,pct_count:5.0},
+    {diameter_in:12,count:7,total_length_ft:2089,pct_count:7.0},
+    {diameter_in:15,count:3,total_length_ft:686,pct_count:3.0},
+    {diameter_in:18,count:1,total_length_ft:25,pct_count:1.0},
+    {diameter_in:21,count:3,total_length_ft:764,pct_count:3.0},
+    {diameter_in:30,count:12,total_length_ft:3591,pct_count:12.0}
+  ],
+  diam_cat: [
+    {category:'Small (≤8")',count:69,total_length_ft:16246},
+    {category:'Medium (10–15")',count:15,total_length_ft:4467},
+    {category:'Large (≥18")',count:16,total_length_ft:4380}
+  ],
+  xtab: {
+    work_types:["CTV","Cured-in-Place","Pipe Bursting","Point Repair"],
+    diameters:[6,8,10,12,15,18,21,30],
+    count_matrix:[
+      [0,10,0,0,0,0,0,0],
+      [0,0,1,2,2,1,3,9],
+      [12,47,4,5,1,0,0,2],
+      [0,0,0,0,0,0,0,1]
+    ]
+  },
+  histogram:[
+    {label:"0–100 ft",lo:0,hi:100,count:2},
+    {label:"100–200 ft",lo:100,hi:200,count:9},
+    {label:"200–300 ft",lo:200,hi:300,count:39},
+    {label:"300–400 ft",lo:300,hi:400,count:30},
+    {label:"400–500 ft",lo:400,hi:500,count:17},
+    {label:"500–600 ft",lo:500,hi:600,count:3}
+  ],
+  dq_flags:[
+    {flag:"Zero length",count:1,detail:"IMS 14879781"},
+    {flag:"Very short pipe (<20 ft)",count:1,detail:"IMS 14879781 — 8 ft"},
+    {flag:"Structural WO missing Other_WO_Description",count:50,detail:"50 Pipe Bursting segments lack Other_WO_Description"},
+    {flag:'CIPP on pipe < 15" (verify spec)',count:7,detail:"7 CIPP pipes ≤12\" — confirm design thickness"}
+  ],
+  table:[
+    {ims:14879968,ufid:3455986,us_mh:"IA062008",ds_mh:"IA064060",diam:12,length:310,work_type:"CTV",method_short:"CTV Inspection",diam_cat:'Medium (10–15")',len_cat:"Long (>300 ft)",cipp_mm:null,pb_od:null,gsm:"GSM_IA062008IA064060"},
+    {ims:14879974,ufid:3465316,us_mh:"IA064001",ds_mh:"IA065041",diam:15,length:300,work_type:"CTV",method_short:"CTV Inspection",diam_cat:'Medium (10–15")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:null,gsm:"GSM_IA064001IA065041"},
+    {ims:14879973,ufid:3465364,us_mh:"IA064008",ds_mh:"IA064008A",diam:8,length:433,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Long (>300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064008IA064008A"},
+    {ims:14879970,ufid:3465363,us_mh:"IA064009",ds_mh:"IA064008",diam:8,length:513,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Long (>300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064009IA064008"},
+    {ims:14879969,ufid:3463765,us_mh:"IA064010",ds_mh:"IA064009",diam:8,length:523,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Long (>300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064010IA064009"},
+    {ims:14879781,ufid:3463764,us_mh:"IA064011",ds_mh:"IA064010",diam:8,length:8,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Short (<150 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064011IA064010"},
+    {ims:14879956,ufid:3465317,us_mh:"IA064012",ds_mh:"IA064001",diam:8,length:153,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064012IA064001"},
+    {ims:14879972,ufid:3465332,us_mh:"IA064012",ds_mh:"IA059028",diam:8,length:326,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Long (>300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064012IA059028"},
+    {ims:14879960,ufid:3465333,us_mh:"IA064013",ds_mh:"IA064012",diam:8,length:296,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064013IA064012"},
+    {ims:14879961,ufid:3465358,us_mh:"IA064014",ds_mh:"IA064013",diam:8,length:293,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064014IA064013"},
+    {ims:14879962,ufid:3465359,us_mh:"IA064015",ds_mh:"IA064014",diam:8,length:279,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064015IA064014"},
+    {ims:14879963,ufid:3465360,us_mh:"IA064016",ds_mh:"IA064015",diam:8,length:280,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064016IA064015"},
+    {ims:14879964,ufid:3465361,us_mh:"IA064017",ds_mh:"IA064016",diam:8,length:256,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064017IA064016"},
+    {ims:14879965,ufid:3465362,us_mh:"IA064018",ds_mh:"IA064017",diam:8,length:279,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064018IA064017"},
+    {ims:14879966,ufid:3465329,us_mh:"IA064019",ds_mh:"IA064018",diam:8,length:250,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064019IA064018"},
+    {ims:14879967,ufid:3465330,us_mh:"IA064020",ds_mh:"IA064019",diam:8,length:255,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064020IA064019"},
+    {ims:14879957,ufid:3465328,us_mh:"IA064021",ds_mh:"IA064020",diam:8,length:254,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064021IA064020"},
+    {ims:14879958,ufid:3465331,us_mh:"IA064022",ds_mh:"IA064021",diam:8,length:210,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064022IA064021"},
+    {ims:14879959,ufid:3463766,us_mh:"IA064023",ds_mh:"IA064022",diam:8,length:164,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064023IA064022"},
+    {ims:14879975,ufid:3465318,us_mh:"IA064024",ds_mh:"IA064001",diam:8,length:280,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064024IA064001"},
+    {ims:14879976,ufid:3465319,us_mh:"IA064025",ds_mh:"IA064024",diam:8,length:303,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Long (>300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064025IA064024"},
+    {ims:14879977,ufid:3465320,us_mh:"IA064026",ds_mh:"IA064025",diam:8,length:260,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064026IA064025"},
+    {ims:14879978,ufid:3465321,us_mh:"IA064027",ds_mh:"IA064026",diam:8,length:254,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064027IA064026"},
+    {ims:14879979,ufid:3465322,us_mh:"IA064028",ds_mh:"IA064027",diam:8,length:261,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064028IA064027"},
+    {ims:14879980,ufid:3465323,us_mh:"IA064029",ds_mh:"IA064028",diam:8,length:250,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064029IA064028"},
+    {ims:14879981,ufid:3465324,us_mh:"IA064030",ds_mh:"IA064029",diam:8,length:256,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064030IA064029"},
+    {ims:14879982,ufid:3465325,us_mh:"IA064031",ds_mh:"IA064030",diam:8,length:259,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064031IA064030"},
+    {ims:14879983,ufid:3465326,us_mh:"IA064032",ds_mh:"IA064031",diam:8,length:313,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Long (>300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064032IA064031"},
+    {ims:14879984,ufid:3465327,us_mh:"IA064033",ds_mh:"IA064032",diam:8,length:232,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064033IA064032"},
+    {ims:14879985,ufid:3465337,us_mh:"IA064034",ds_mh:"IA064033",diam:8,length:209,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064034IA064033"},
+    {ims:14879986,ufid:3465338,us_mh:"IA064035",ds_mh:"IA064034",diam:8,length:196,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064035IA064034"},
+    {ims:14879987,ufid:3465339,us_mh:"IA064036",ds_mh:"IA064035",diam:8,length:207,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064036IA064035"},
+    {ims:14879988,ufid:3465340,us_mh:"IA064037",ds_mh:"IA064036",diam:8,length:221,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064037IA064036"},
+    {ims:14879989,ufid:3465341,us_mh:"IA064038",ds_mh:"IA064037",diam:8,length:224,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064038IA064037"},
+    {ims:14879990,ufid:3465342,us_mh:"IA064039",ds_mh:"IA064038",diam:8,length:225,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064039IA064038"},
+    {ims:14879991,ufid:3465343,us_mh:"IA064040",ds_mh:"IA064039",diam:8,length:248,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064040IA064039"},
+    {ims:14879992,ufid:3465344,us_mh:"IA064041",ds_mh:"IA064040",diam:8,length:216,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064041IA064040"},
+    {ims:14879993,ufid:3465345,us_mh:"IA064042",ds_mh:"IA064041",diam:8,length:236,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064042IA064041"},
+    {ims:14879994,ufid:3465346,us_mh:"IA064043",ds_mh:"IA064042",diam:8,length:201,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064043IA064042"},
+    {ims:14879995,ufid:3465347,us_mh:"IA064044",ds_mh:"IA064043",diam:8,length:220,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064044IA064043"},
+    {ims:14879996,ufid:3465348,us_mh:"IA064045",ds_mh:"IA064044",diam:8,length:229,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064045IA064044"},
+    {ims:14879997,ufid:3465349,us_mh:"IA064046",ds_mh:"IA064045",diam:8,length:228,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064046IA064045"},
+    {ims:14879998,ufid:3465350,us_mh:"IA064047",ds_mh:"IA064046",diam:8,length:237,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064047IA064046"},
+    {ims:14879999,ufid:3465351,us_mh:"IA064048",ds_mh:"IA064047",diam:8,length:240,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064048IA064047"},
+    {ims:14880000,ufid:3465352,us_mh:"IA064049",ds_mh:"IA064048",diam:8,length:229,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064049IA064048"},
+    {ims:14880001,ufid:3465353,us_mh:"IA064050",ds_mh:"IA064049",diam:8,length:298,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA064050IA064049"},
+    {ims:14880002,ufid:3465354,us_mh:"IA065001",ds_mh:"IA064050",diam:8,length:351,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Long (>300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA065001IA064050"},
+    {ims:14880003,ufid:3465355,us_mh:"IA065002",ds_mh:"IA065001",diam:8,length:344,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Long (>300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA065002IA065001"},
+    {ims:14880004,ufid:3465356,us_mh:"IA065003",ds_mh:"IA065002",diam:8,length:336,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Long (>300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA065003IA065002"},
+    {ims:14880005,ufid:3465357,us_mh:"IA065004",ds_mh:"IA065003",diam:8,length:331,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Long (>300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA065004IA065003"},
+    {ims:14880006,ufid:3465334,us_mh:"IA065005",ds_mh:"IA065004",diam:8,length:356,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Long (>300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA065005IA065004"},
+    {ims:14880007,ufid:3465335,us_mh:"IA065006",ds_mh:"IA065005",diam:8,length:382,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Long (>300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA065006IA065005"},
+    {ims:14880008,ufid:3465336,us_mh:"IA065007",ds_mh:"IA065006",diam:8,length:448,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Long (>300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA065007IA065006"},
+    {ims:14879800,ufid:3455900,us_mh:"IA062001",ds_mh:"IA062002",diam:6,length:350,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Long (>300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA062001IA062002"},
+    {ims:14879801,ufid:3455901,us_mh:"IA062002",ds_mh:"IA062003",diam:6,length:290,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA062002IA062003"},
+    {ims:14879802,ufid:3455902,us_mh:"IA062003",ds_mh:"IA062004",diam:6,length:310,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Long (>300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA062003IA062004"},
+    {ims:14879803,ufid:3455903,us_mh:"IA062004",ds_mh:"IA062005",diam:6,length:320,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Long (>300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA062004IA062005"},
+    {ims:14879804,ufid:3455904,us_mh:"IA062005",ds_mh:"IA062006",diam:6,length:280,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA062005IA062006"},
+    {ims:14879805,ufid:3455905,us_mh:"IA062006",ds_mh:"IA062007",diam:6,length:270,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA062006IA062007"},
+    {ims:14879806,ufid:3455906,us_mh:"IA062007",ds_mh:"IA062008",diam:6,length:260,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA062007IA062008"},
+    {ims:14879807,ufid:3455907,us_mh:"IA062009",ds_mh:"IA062010",diam:6,length:240,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA062009IA062010"},
+    {ims:14879808,ufid:3455908,us_mh:"IA062010",ds_mh:"IA062011",diam:6,length:235,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA062010IA062011"},
+    {ims:14879809,ufid:3455909,us_mh:"IA062011",ds_mh:"IA062012",diam:6,length:245,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA062011IA062012"},
+    {ims:14879810,ufid:3455910,us_mh:"IA062012",ds_mh:"IA062013",diam:6,length:225,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA062012IA062013"},
+    {ims:14879811,ufid:3455911,us_mh:"IA062013",ds_mh:"IA062014",diam:6,length:230,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:8.625,gsm:"GSM_IA062013IA062014"},
+    {ims:14879820,ufid:3456000,us_mh:"IA063001",ds_mh:"IA063002",diam:10,length:380,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Medium (10–15")',len_cat:"Long (>300 ft)",cipp_mm:null,pb_od:10.75,gsm:"GSM_IA063001IA063002"},
+    {ims:14879821,ufid:3456001,us_mh:"IA063002",ds_mh:"IA063003",diam:10,length:360,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Medium (10–15")',len_cat:"Long (>300 ft)",cipp_mm:null,pb_od:10.75,gsm:"GSM_IA063002IA063003"},
+    {ims:14879822,ufid:3456002,us_mh:"IA063003",ds_mh:"IA063004",diam:10,length:370,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Medium (10–15")',len_cat:"Long (>300 ft)",cipp_mm:null,pb_od:10.75,gsm:"GSM_IA063003IA063004"},
+    {ims:14879823,ufid:3456003,us_mh:"IA063004",ds_mh:"IA063005",diam:10,length:125,work_type:"CTV",method_short:"CTV Inspection",diam_cat:'Medium (10–15")',len_cat:"Short (<150 ft)",cipp_mm:null,pb_od:null,gsm:"GSM_IA063004IA063005"},
+    {ims:14879824,ufid:3456004,us_mh:"IA063005",ds_mh:"IA063006",diam:12,length:390,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Medium (10–15")',len_cat:"Long (>300 ft)",cipp_mm:null,pb_od:12.75,gsm:"GSM_IA063005IA063006"},
+    {ims:14879825,ufid:3456005,us_mh:"IA063006",ds_mh:"IA063007",diam:12,length:380,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Medium (10–15")',len_cat:"Long (>300 ft)",cipp_mm:null,pb_od:12.75,gsm:"GSM_IA063006IA063007"},
+    {ims:14879826,ufid:3456006,us_mh:"IA063007",ds_mh:"IA063008",diam:12,length:330,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Medium (10–15")',len_cat:"Long (>300 ft)",cipp_mm:null,pb_od:12.75,gsm:"GSM_IA063007IA063008"},
+    {ims:14879827,ufid:3456007,us_mh:"IA063008",ds_mh:"IA063009",diam:12,length:295,work_type:"CTV",method_short:"CTV Inspection",diam_cat:'Medium (10–15")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:null,gsm:"GSM_IA063008IA063009"},
+    {ims:14879828,ufid:3456008,us_mh:"IA063009",ds_mh:"IA063010",diam:12,length:276,work_type:"CTV",method_short:"CTV Inspection",diam_cat:'Medium (10–15")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:null,gsm:"GSM_IA063009IA063010"},
+    {ims:14879829,ufid:3456009,us_mh:"IA063010",ds_mh:"IA063011",diam:12,length:285,work_type:"CTV",method_short:"CTV Inspection",diam_cat:'Medium (10–15")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:null,gsm:"GSM_IA063010IA063011"},
+    {ims:14879830,ufid:3456010,us_mh:"IA063011",ds_mh:"IA063012",diam:12,length:259,work_type:"CTV",method_short:"CTV Inspection",diam_cat:'Medium (10–15")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:null,gsm:"GSM_IA063011IA063012"},
+    {ims:14879831,ufid:3456011,us_mh:"IA063012",ds_mh:"IA063013",diam:12,length:190,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Medium (10–15")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:12.75,gsm:"GSM_IA063012IA063013"},
+    {ims:14879832,ufid:3456012,us_mh:"IA063013",ds_mh:"IA063014",diam:15,length:420,work_type:"Pipe Bursting",method_short:"Pipe Bursting",diam_cat:'Medium (10–15")',len_cat:"Long (>300 ft)",cipp_mm:null,pb_od:16.0,gsm:"GSM_IA063013IA063014"},
+    {ims:14879833,ufid:3456013,us_mh:"IA063014",ds_mh:"IA063015",diam:15,length:142,work_type:"Cured-in-Place",method_short:"CIPP Lining",diam_cat:'Medium (10–15")',len_cat:"Short (<150 ft)",cipp_mm:10.5,pb_od:null,gsm:"GSM_IA063014IA063015"},
+    {ims:14879834,ufid:3456014,us_mh:"IA063015",ds_mh:"IA063016",diam:15,length:124,work_type:"CTV",method_short:"CTV Inspection",diam_cat:'Medium (10–15")',len_cat:"Short (<150 ft)",cipp_mm:null,pb_od:null,gsm:"GSM_IA063015IA063016"},
+    {ims:14879835,ufid:3456015,us_mh:"IA063016",ds_mh:"IA063017",diam:18,length:25,work_type:"Cured-in-Place",method_short:"CIPP Lining",diam_cat:'Large (≥18")',len_cat:"Short (<150 ft)",cipp_mm:13.5,pb_od:null,gsm:"GSM_IA063016IA063017"},
+    {ims:14879836,ufid:3456016,us_mh:"IA063017",ds_mh:"IA063018",diam:21,length:280,work_type:"Cured-in-Place",method_short:"CIPP Lining",diam_cat:'Large (≥18")',len_cat:"Medium (150–300 ft)",cipp_mm:15.0,pb_od:null,gsm:"GSM_IA063017IA063018"},
+    {ims:14879837,ufid:3456017,us_mh:"IA063018",ds_mh:"IA063019",diam:21,length:248,work_type:"Cured-in-Place",method_short:"CIPP Lining",diam_cat:'Large (≥18")',len_cat:"Medium (150–300 ft)",cipp_mm:15.0,pb_od:null,gsm:"GSM_IA063018IA063019"},
+    {ims:14879838,ufid:3456018,us_mh:"IA063019",ds_mh:"IA063020",diam:21,length:236,work_type:"Cured-in-Place",method_short:"CIPP Lining",diam_cat:'Large (≥18")',len_cat:"Medium (150–300 ft)",cipp_mm:15.0,pb_od:null,gsm:"GSM_IA063019IA063020"},
+    {ims:14879839,ufid:3456019,us_mh:"IA063020",ds_mh:"IA063021",diam:30,length:450,work_type:"Cured-in-Place",method_short:"CIPP Lining",diam_cat:'Large (≥18")',len_cat:"Long (>300 ft)",cipp_mm:21.0,pb_od:null,gsm:"GSM_IA063020IA063021"},
+    {ims:14879840,ufid:3456020,us_mh:"IA063021",ds_mh:"IA063022",diam:30,length:440,work_type:"Cured-in-Place",method_short:"CIPP Lining",diam_cat:'Large (≥18")',len_cat:"Long (>300 ft)",cipp_mm:21.0,pb_od:null,gsm:"GSM_IA063021IA063022"},
+    {ims:14879841,ufid:3456021,us_mh:"IA063022",ds_mh:"IA063023",diam:30,length:430,work_type:"Cured-in-Place",method_short:"CIPP Lining",diam_cat:'Large (≥18")',len_cat:"Long (>300 ft)",cipp_mm:21.0,pb_od:null,gsm:"GSM_IA063022IA063023"},
+    {ims:14879842,ufid:3456022,us_mh:"IA063023",ds_mh:"IA063024",diam:30,length:415,work_type:"Cured-in-Place",method_short:"CIPP Lining",diam_cat:'Large (≥18")',len_cat:"Long (>300 ft)",cipp_mm:21.0,pb_od:null,gsm:"GSM_IA063023IA063024"},
+    {ims:14879843,ufid:3456023,us_mh:"IA063024",ds_mh:"IA063025",diam:30,length:395,work_type:"Cured-in-Place",method_short:"CIPP Lining",diam_cat:'Large (≥18")',len_cat:"Long (>300 ft)",cipp_mm:21.0,pb_od:null,gsm:"GSM_IA063024IA063025"},
+    {ims:14879844,ufid:3456024,us_mh:"IA063025",ds_mh:"IA063026",diam:30,length:380,work_type:"Cured-in-Place",method_short:"CIPP Lining",diam_cat:'Large (≥18")',len_cat:"Long (>300 ft)",cipp_mm:21.0,pb_od:null,gsm:"GSM_IA063025IA063026"},
+    {ims:14879845,ufid:3456025,us_mh:"IA063026",ds_mh:"IA063027",diam:30,length:370,work_type:"Cured-in-Place",method_short:"CIPP Lining",diam_cat:'Large (≥18")',len_cat:"Long (>300 ft)",cipp_mm:21.0,pb_od:null,gsm:"GSM_IA063026IA063027"},
+    {ims:14879846,ufid:3456026,us_mh:"IA063027",ds_mh:"IA063028",diam:30,length:350,work_type:"Cured-in-Place",method_short:"CIPP Lining",diam_cat:'Large (≥18")',len_cat:"Long (>300 ft)",cipp_mm:21.0,pb_od:null,gsm:"GSM_IA063027IA063028"},
+    {ims:14879847,ufid:3456027,us_mh:"IA063028",ds_mh:"IA063029",diam:30,length:340,work_type:"Cured-in-Place",method_short:"CIPP Lining",diam_cat:'Large (≥18")',len_cat:"Long (>300 ft)",cipp_mm:21.0,pb_od:null,gsm:"GSM_IA063028IA063029"},
+    {ims:14879848,ufid:3456028,us_mh:"IA063029",ds_mh:"IA063030",diam:30,length:321,work_type:"Cured-in-Place",method_short:"CIPP Lining",diam_cat:'Large (≥18")',len_cat:"Long (>300 ft)",cipp_mm:21.0,pb_od:null,gsm:"GSM_IA063029IA063030"},
+    {ims:14879849,ufid:3456029,us_mh:"IA063030",ds_mh:"IA063031",diam:30,length:290,work_type:"CTV",method_short:"CTV Inspection",diam_cat:'Large (≥18")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:null,gsm:"GSM_IA063030IA063031"},
+    {ims:14879850,ufid:3456030,us_mh:"IA063031",ds_mh:"IA063032",diam:30,length:270,work_type:"CTV",method_short:"CTV Inspection",diam_cat:'Large (≥18")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:null,gsm:"GSM_IA063031IA063032"},
+    {ims:14879851,ufid:3456031,us_mh:"IA063032",ds_mh:"IA063033",diam:30,length:265,work_type:"CTV",method_short:"CTV Inspection",diam_cat:'Large (≥18")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:null,gsm:"GSM_IA063032IA063033"},
+    {ims:14879853,ufid:3456033,us_mh:"IA064090",ds_mh:"IA064091",diam:8,length:289,work_type:"Point Repair",method_short:"Point Repair",diam_cat:'Small (≤8")',len_cat:"Medium (150–300 ft)",cipp_mm:null,pb_od:null,gsm:"GSM_IA064090IA064091"}
+  ]
+};
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+const WT_COLOR = {'Pipe Bursting':'pb','Cured-in-Place':'cipp','CTV':'ctv','Point Repair':'pr'};
+const WT_CSS   = {'Pipe Bursting':'--pb','Cured-in-Place':'--cipp','CTV':'--ctv','Point Repair':'--pr'};
+const WT_EMOJI = {'Pipe Bursting':'💥','Cured-in-Place':'🪱','CTV':'📹','Point Repair':'🔩'};
+
+function cssVar(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+
+function wtChip(wt){
+  const c = WT_COLOR[wt] || 'info';
+  return `<span class="chip ${c}">${WT_EMOJI[wt]||''} ${wt}</span>`;
+}
+function dcChip(cat){
+  const c = cat.includes('Small') ? 'small' : cat.includes('Medium') ? 'med' : 'large';
+  return `<span class="chip ${c}">${cat}</span>`;
+}
+
+// ── KPI Cards ─────────────────────────────────────────────────────────────
+const kpiData = [
+  {icon:'🔢',val:D.meta.total_pipes,unit:'pipes',lbl:'Total Segments',cls:'blue'},
+  {icon:'📏',val:D.meta.total_length_ft.toLocaleString(),unit:'ft',lbl:'Total Length',cls:'blue'},
+  {icon:'🗺️',val:D.meta.total_length_mi,unit:'miles',lbl:'Total Length',cls:'cyan'},
+  {icon:'⚙️',val:D.meta.structural_pipes,unit:'structural',lbl:'Rehab Segments',cls:'purple'},
+  {icon:'📹',val:D.meta.inspection_pipes,unit:'CTV',lbl:'Inspection Only',cls:'cyan'},
+  {icon:'📐',val:D.meta.mean_length_ft,unit:'ft avg',lbl:'Mean Pipe Length',cls:'orange'},
+  {icon:'📊',val:D.meta.median_length_ft,unit:'ft median',lbl:'Median Pipe Length',cls:'orange'},
+  {icon:'↕️',val:`${D.meta.min_length_ft}–${D.meta.max_length_ft}`,unit:'ft range',lbl:'Length Range',cls:'green'},
+];
+const kpig = document.getElementById('kpi-grid');
+kpiData.forEach(k=>{
+  kpig.innerHTML += `<div class="kpi-card ${k.cls}">
+    <div class="kpi-icon">${k.icon}</div>
+    <div><span class="kpi-val">${k.val}</span><span class="kpi-unit">${k.unit}</span></div>
+    <div class="kpi-lbl">${k.lbl}</div>
+  </div>`;
+});
+
+// ── Horizontal bar renderer ───────────────────────────────────────────────
+function renderHBar(containerId, items, {labelKey,valueKey,maxVal,colorVar,labelWidth,suffix=''}){
+  const el = document.getElementById(containerId);
+  const max = maxVal || Math.max(...items.map(i=>i[valueKey]));
+  items.forEach(item=>{
+    const pct = (item[valueKey]/max*100).toFixed(1);
+    const color = `var(${colorVar})`;
+    const lbl = item[labelKey];
+    const wClass = labelWidth === 'wide' ? 'hbar-label wide' : 'hbar-label';
+    el.innerHTML += `<div class="hbar-row">
+      <div class="${wClass}">${lbl}</div>
+      <div class="hbar-track">
+        <div class="hbar-fill" style="width:${pct}%;background:${color};color:var(--bg)">
+          ${item.pct_count !== undefined ? item.pct_count+'%' : ''}
+        </div>
+      </div>
+      <div class="hbar-right" style="color:${color}">${item[valueKey].toLocaleString()}${suffix}</div>
+    </div>`;
+  });
+}
+
+// Work type charts
+renderHBar('wt-count-chart', D.wt, {
+  labelKey:'method_short', valueKey:'count', colorVar:'--pb',
+  labelWidth:'normal'
+});
+// Use different colors per work type for length chart
+const lenChart = document.getElementById('wt-len-chart');
+const lenColors = ['--pb','--cipp','--ctv','--pr'];
+D.wt.forEach((item,i)=>{
+  const pct = (item.total_length_ft / D.wt[0].total_length_ft * 100).toFixed(1);
+  const color = `var(${lenColors[i % lenColors.length]})`;
+  lenChart.innerHTML += `<div class="hbar-row">
+    <div class="hbar-label">${item.method_short}</div>
+    <div class="hbar-track">
+      <div class="hbar-fill" style="width:${pct}%;background:${color};color:var(--bg)">
+        ${item.pct_length}%
+      </div>
+    </div>
+    <div class="hbar-right" style="color:${color}">${item.total_length_ft.toLocaleString()} ft</div>
+  </div>`;
+});
+
+// Diameter count chart
+const diamColors = ['#3b82f6','#60a5fa','#93c5fd','#bfdbfe','#a855f7','#c084fc','#f97316','#fb923c'];
+const diamChart = document.getElementById('diam-count-chart');
+const maxDCount = Math.max(...D.diam.map(d=>d.count));
+D.diam.forEach((item,i)=>{
+  const pct = (item.count / maxDCount * 100).toFixed(1);
+  const color = diamColors[i % diamColors.length];
+  diamChart.innerHTML += `<div class="hbar-row">
+    <div class="hbar-label">${item.diameter_in}"</div>
+    <div class="hbar-track">
+      <div class="hbar-fill" style="width:${pct}%;background:${color};color:var(--bg)">
+        ${item.pct_count}%
+      </div>
+    </div>
+    <div class="hbar-right" style="color:${color}">${item.count} pipes</div>
+  </div>`;
+});
+
+// ── SVG Donut helper ──────────────────────────────────────────────────────
+function makeSVGDonut(segments, size=130, strokeW=14){
+  const r = (size - strokeW) / 2;
+  const cx = size / 2, cy = size / 2;
+  const circ = 2 * Math.PI * r;
+  const total = segments.reduce((a,s)=>a+s.value,0);
+  let offset = 0;
+  let paths = '';
+  segments.forEach(seg=>{
+    const dash  = (seg.value / total) * circ;
+    const gap   = circ - dash;
+    paths += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none"
+      stroke="${seg.color}" stroke-width="${strokeW}"
+      stroke-dasharray="${dash.toFixed(2)} ${gap.toFixed(2)}"
+      stroke-dashoffset="${(-offset).toFixed(2)}"
+      transform="rotate(-90 ${cx} ${cy})"/>`;
+    offset += dash;
+  });
+  return `<svg class="donut-svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--surf2)" stroke-width="${strokeW}"/>
+    ${paths}
+  </svg>`;
+}
+
+// Diameter category donut
+const DC_COLORS = ['#3fb950','#d29922','#f85149'];
+const dcDonut = document.getElementById('diam-cat-donut');
+const dcSegs = D.diam_cat.map((d,i)=>({value:d.count, color:DC_COLORS[i]}));
+let dcLegend = '<div class="donut-legend">';
+D.diam_cat.forEach((d,i)=>{
+  dcLegend += `<div class="leg-item"><span class="leg-dot" style="background:${DC_COLORS[i]}"></span>
+    <span>${d.category}</span>
+    <span class="leg-val" style="color:${DC_COLORS[i]}">${d.count} pipes · ${d.total_length_ft.toLocaleString()} ft</span></div>`;
+});
+dcLegend += '</div>';
+dcDonut.innerHTML = makeSVGDonut(dcSegs) + dcLegend;
+
+// Method mix donut
+const M_COLORS = ['#3b82f6','#a855f7','#22d3ee','#f97316'];
+const methodDonut = document.getElementById('method-donut');
+const mSegs = D.wt.map((w,i)=>({value:w.count, color:M_COLORS[i]}));
+let mLegend = '<div class="donut-legend">';
+D.wt.forEach((w,i)=>{
+  mLegend += `<div class="leg-item"><span class="leg-dot" style="background:${M_COLORS[i]}"></span>
+    <span>${w.method_short}</span>
+    <span class="leg-val" style="color:${M_COLORS[i]}">${w.count} · ${w.pct_count}%</span></div>`;
+});
+mLegend += '</div>';
+methodDonut.innerHTML = makeSVGDonut(mSegs) + mLegend;
+
+// ── Histogram ─────────────────────────────────────────────────────────────
+const histWrap = document.getElementById('histogram');
+const maxCount = Math.max(...D.histogram.map(b=>b.count));
+D.histogram.forEach(b=>{
+  const hPct = maxCount > 0 ? (b.count / maxCount * 100).toFixed(0) : 0;
+  histWrap.innerHTML += `<div class="hist-bar-wrap">
+    <div class="hist-cnt">${b.count}</div>
+    <div class="hist-bar" style="height:${hPct}%;min-height:${b.count>0?'4px':'0'}"></div>
+    <div class="hist-lbl">${b.label.replace(' ft','')}</div>
+  </div>`;
+});
+
+// ── Cross-tab heatmap ─────────────────────────────────────────────────────
+const xtWrap = document.getElementById('xtab-wrap');
+const matrix = D.xtab.count_matrix;
+const maxCell = Math.max(...matrix.flat().filter(v=>v>0));
+
+function cellBg(v){
+  if(v===0) return 'var(--surf)';
+  const t = v / maxCell;
+  const r = Math.round(31 + t*40);
+  const g = Math.round(111 + t*20);
+  const b = Math.round(235 - t*100);
+  return `rgba(${r},${g},${b},${0.3 + t*0.5})`;
+}
+
+let xtHtml = '<table class="xtab-table"><thead><tr><th class="row-hdr">Work Type</th>';
+D.xtab.diameters.forEach(d => { xtHtml += `<th>${d}"</th>`; });
+xtHtml += '<th>Total</th></tr></thead><tbody>';
+D.xtab.work_types.forEach((wt,wi)=>{
+  const rowTotal = matrix[wi].reduce((a,b)=>a+b,0);
+  const color = `var(${WT_CSS[wt] || '--pb'})`;
+  xtHtml += `<tr><td style="text-align:left;font-weight:600;color:${color}">${wt}</td>`;
+  matrix[wi].forEach(v=>{
+    const bg = cellBg(v);
+    xtHtml += `<td style="background:${bg};color:${v>0?'var(--text)':'var(--muted)'}">${v||'—'}</td>`;
+  });
+  xtHtml += `<td style="font-weight:700;color:var(--text)">${rowTotal}</td></tr>`;
+});
+xtHtml += '</tbody></table>';
+xtWrap.innerHTML = xtHtml;
+
+// ── Liner specification cards ─────────────────────────────────────────────
+const linerSection = document.getElementById('liner-section');
+
+// CIPP card
+linerSection.innerHTML += `<div class="chart-card">
+  <h3>🪱 CIPP Lining — Thickness Specification</h3>
+  <div class="hbar-list">
+    <div class="hbar-row"><div class="hbar-label wide">30" → 21.0 mm CIPP</div>
+      <div class="hbar-track"><div class="hbar-fill" style="width:100%;background:var(--cipp);color:var(--bg)">12 pipes</div></div>
+      <div class="hbar-right" style="color:var(--cipp)">3,591 ft</div></div>
+    <div class="hbar-row"><div class="hbar-label wide">21" → 15.0 mm CIPP</div>
+      <div class="hbar-track"><div class="hbar-fill" style="width:25%;background:var(--cipp);color:var(--bg)">3 pipes</div></div>
+      <div class="hbar-right" style="color:var(--cipp)">764 ft</div></div>
+    <div class="hbar-row"><div class="hbar-label wide">18" → 13.5 mm CIPP</div>
+      <div class="hbar-track"><div class="hbar-fill" style="width:8%;background:var(--cipp);color:var(--bg)">1 pipe</div></div>
+      <div class="hbar-right" style="color:var(--cipp)">25 ft</div></div>
+    <div class="hbar-row"><div class="hbar-label wide">15" → 10.5 mm CIPP</div>
+      <div class="hbar-track"><div class="hbar-fill" style="width:8%;background:var(--cipp);color:var(--bg)">1 pipe</div></div>
+      <div class="hbar-right" style="color:var(--cipp)">142 ft</div></div>
+    <div class="hbar-row"><div class="hbar-label wide">10" → 6.0 mm CIPP</div>
+      <div class="hbar-track"><div class="hbar-fill" style="width:8%;background:var(--cipp);color:var(--bg)">1 pipe</div></div>
+      <div class="hbar-right" style="color:var(--cipp)">260 ft</div></div>
+  </div>
+</div>`;
+
+// Pipe Bursting card
+linerSection.innerHTML += `<div class="chart-card">
+  <h3>💥 Pipe Bursting — PE Liner OD Specification</h3>
+  <div class="hbar-list">
+    <div class="hbar-row"><div class="hbar-label wide">6" & 8" → 8.625" OD PE</div>
+      <div class="hbar-track"><div class="hbar-fill" style="width:100%;background:var(--pb);color:var(--bg)">61 pipes</div></div>
+      <div class="hbar-right" style="color:var(--pb)">16,246 ft</div></div>
+    <div class="hbar-row"><div class="hbar-label wide">10" → 10.75" OD PE</div>
+      <div class="hbar-track"><div class="hbar-fill" style="width:6.5%;background:var(--pb);color:var(--bg)">4 pipes</div></div>
+      <div class="hbar-right" style="color:var(--pb)">1,432 ft</div></div>
+    <div class="hbar-row"><div class="hbar-label wide">12" → 12.75" OD PE</div>
+      <div class="hbar-track"><div class="hbar-fill" style="width:8%;background:var(--pb);color:var(--bg)">5 pipes</div></div>
+      <div class="hbar-right" style="color:var(--pb)">1,874 ft</div></div>
+    <div class="hbar-row"><div class="hbar-label wide">15" → 16.0" OD PE</div>
+      <div class="hbar-track"><div class="hbar-fill" style="width:1.6%;background:var(--pb);color:var(--bg)">1 pipe</div></div>
+      <div class="hbar-right" style="color:var(--pb)">420 ft</div></div>
+  </div>
+</div>`;
+
+// ── Data quality flags ────────────────────────────────────────────────────
+const dqList = document.getElementById('dq-list');
+if(D.dq_flags.length === 0){
+  dqList.innerHTML = '<div class="dq-item info"><div class="dq-title">✅ No data quality flags detected.</div></div>';
+} else {
+  const sevColor = [false, false, true, true]; // info vs warn
+  D.dq_flags.forEach((f,i)=>{
+    const cls = (i < 2) ? 'info' : 'warn';
+    dqList.innerHTML += `<div class="dq-item ${cls}">
+      <span class="dq-count">${f.count}</span>
+      <div class="dq-title">${cls==='warn'?'⚠️':'ℹ️'} ${f.flag}</div>
+      <div class="dq-detail">${f.detail}</div>
+    </div>`;
+  });
+}
+
+// ── Populate diameter filter ───────────────────────────────────────────────
+const diamFilter = document.getElementById('diam-filter');
+D.diam.forEach(d=>{
+  const opt = document.createElement('option');
+  opt.value = d.diameter_in;
+  opt.textContent = d.diameter_in + '"';
+  diamFilter.appendChild(opt);
+});
+
+// ── Pipe segment table ────────────────────────────────────────────────────
+const tbody = document.getElementById('seg-tbody');
+const rowCountEl = document.getElementById('row-count');
+let allRows = D.table;
+
+function specDetail(row){
+  if(row.cipp_mm) return `<span style="color:var(--cipp);font-size:11px">CIPP ${row.cipp_mm}mm</span>`;
+  if(row.pb_od)   return `<span style="color:var(--pb);font-size:11px">PE ${row.pb_od}" OD</span>`;
+  return '<span style="color:var(--muted);font-size:11px">—</span>';
+}
+
+function renderTable(rows){
+  tbody.innerHTML = '';
+  rows.forEach(r=>{
+    tbody.innerHTML += `<tr>
+      <td class="td-mono">${r.ims}</td>
+      <td class="td-mono">${r.ufid}</td>
+      <td class="td-mono">${r.us_mh}</td>
+      <td class="td-mono">${r.ds_mh}</td>
+      <td style="font-weight:600">${r.diam}"</td>
+      <td style="font-weight:600">${r.length} ft</td>
+      <td>${wtChip(r.work_type)}</td>
+      <td>${dcChip(r.diam_cat)}</td>
+      <td style="color:var(--muted);font-size:12px">${r.len_cat}</td>
+      <td>${specDetail(r)}</td>
+    </tr>`;
+  });
+  rowCountEl.textContent = `${rows.length} of ${allRows.length} rows`;
+}
+
+function filterTable(){
+  const q  = document.getElementById('tbl-search').value.toLowerCase();
+  const wt = document.getElementById('wt-filter').value;
+  const d  = document.getElementById('diam-filter').value;
+  const filtered = allRows.filter(r=>{
+    const matchQ  = !q || String(r.ims).includes(q) || (r.us_mh||'').toLowerCase().includes(q)
+                       || (r.ds_mh||'').toLowerCase().includes(q) || (r.gsm||'').toLowerCase().includes(q);
+    const matchWt = !wt || r.work_type === wt;
+    const matchD  = !d  || String(r.diam) === d;
+    return matchQ && matchWt && matchD;
+  });
+  renderTable(filtered);
+}
+
+document.getElementById('tbl-search').addEventListener('input', filterTable);
+document.getElementById('wt-filter').addEventListener('change', filterTable);
+document.getElementById('diam-filter').addEventListener('change', filterTable);
+renderTable(allRows);
+</script>
+</body>
+</html>
